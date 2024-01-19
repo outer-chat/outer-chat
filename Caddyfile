@@ -1,0 +1,6 @@
+:80
+# Reverse proxy for backend service
+reverse_proxy /api/* backend:8080
+
+# Reverse proxy for frontend service
+reverse_proxy frontend:5000

@@ -1,0 +1,3 @@
+[submodule "outer-chat.client"]
+	path = outer-chat.client
+	url = git@github.com:outer-chat/clientapp.git
