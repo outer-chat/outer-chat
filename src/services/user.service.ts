@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { User } from '@prisma/client/edge'
+import { User } from 'src/dto';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async getAllUsers(): Promise<Omit<User, 'password'>[]> {
+  async getAllUsers(): Promise<User[]> {
     const users = await this.prisma.user.findMany({
       select: {
         id: true,
@@ -18,10 +18,10 @@ export class UserService {
       },
     });
 
-    return users;
+    return users as unknown as User[];
   }
 
-  async getUser(id: string): Promise<Omit<User, 'password'>> {
+  async getUser(id: string): Promise<User> {
     const user = await this.prisma.user.findUnique({
       where: {
         id: id,

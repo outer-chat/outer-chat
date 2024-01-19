@@ -1,8 +1,8 @@
 import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { User } from '@prisma/client/edge'
+import { User as PrismaUser } from '@prisma/client/edge'
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { Tokens } from 'src/types';
+import { Tokens } from 'src/dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -12,7 +12,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async registerUser(user: User): Promise<Tokens> {
+  async registerUser(user: PrismaUser): Promise<Tokens> {
     const allowedUsernameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@";
 
     if (!user.email || !user.password || !user.username)
@@ -69,14 +69,14 @@ export class AuthService {
       }
     };
   }
-  async loginUser(user: User): Promise<Tokens> {
+  async loginUser(user: PrismaUser): Promise<Tokens> {
     if (!user?.email && !user?.username)
       throw new BadRequestException('Bad request : username or email is required');
 
     if (!user.password)
       throw new BadRequestException('Bad request : password is required');
 
-    let foundUser: User;
+    let foundUser: PrismaUser;
 
     if (user.email)
       foundUser = await this.prisma.user.findUnique({
