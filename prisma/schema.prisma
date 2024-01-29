@@ -10,14 +10,96 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ChannelType {
+  SERVER_TEXT
+  DM
+  SERVER_VOICE
+  GROUP_DM
+  SERVER_CATEGORY
+  SERVER_ANNOUCEMENT
+  ANNOUNCEMENT_THREAD
+  PUBLIC_THREAD
+  PRIVATE_THREAD
+  SERVER_STAGE_VOICE
+  SERVER_DIRECTORY
+  SERVER_FORUM
+  SERVER_MEDIA
+}
+
 model User {
-  id        String   @id @default(uuid()) @map("_id")
-  email     String   @unique
-  username  String   @unique
-  password  String
+  id       String @id @default(uuid()) @map("_id")
+  email    String @unique
+  username String @unique
+  password String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  avatar    Bytes?
+  avatar      Bytes?
+  banner      Bytes?
+  bannerColor String?
+
+  bio       String?
+  Message   Message[]
+  Server    Server?   @relation(fields: [serverId], references: [id])
+  serverId  String?
+  Channel   Channel?  @relation(fields: [channelId], references: [id])
+  channelId String?
+}
+
+model Message {
+  id        String   @id @default(uuid()) @map("_id")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String
+
+  content   String
+  channel   Channel @relation(fields: [channelId], references: [id])
+  channelId String
+}
+
+model PermissionOverwrite {
+  id    String @id @default(uuid()) @map("_id")
+  type  Int
+  allow String
+  deny  String
+
+  channel   Channel @relation(fields: [channelId], references: [id])
+  channelId String
+}
+
+model Channel {
+  id               String      @id @default(uuid()) @map("_id")
+  name             String
+  type             ChannelType
+  topic            String?
+  nsfw             Boolean
+  messages         Message[]
+  bitrate          Int?
+  userLimit        Int?
+  rateLimitPerUser Int?
+  recipients       User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lastMessageId String?
+
+  Server               Server?               @relation(fields: [serverId], references: [id])
+  serverId             String?
+  description          String?
+  position             Int?
+  permissionOverwrites PermissionOverwrite[]
+}
+
+model Server {
+  id        String   @id @default(uuid()) @map("_id")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name     String
+  channels Channel[]
+  members  User[]
 }
