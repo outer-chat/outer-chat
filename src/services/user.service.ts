@@ -33,6 +33,9 @@ export class UserService {
         createdAt: true,
         updatedAt: true,
         avatar: true,
+        banner: true,
+        bannerColor: true,
+        bio: true,
       },
     });
 
