@@ -29,6 +29,9 @@ export class AuthService {
     if (isEmailTaken)
       throw new BadRequestException('Email is already taken');
 
+    if (!user.email.match(/^.+@.+\..+$/))
+      throw new BadRequestException('Email is not valid');
+
     const isUsernameTaken = await this.prisma.user.findUnique({
       where: {
         username: user.username,

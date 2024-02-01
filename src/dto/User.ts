@@ -39,17 +39,17 @@ export class User extends Promise<Omit<PrismaUser, 'password' | 'serverId' | 'ch
 
   @swagger.ApiProperty({
     description: 'The user avatar',
-    type: String,
+    type: Buffer,
     example: 'Byte array',
   })
-  avatar: string;
+  avatar: Buffer;
 
   @swagger.ApiProperty({
     description: 'The user banner',
-    type: String,
+    type: Buffer,
     example: 'Byte array',
   })
-  banner: string;
+  banner: Buffer;
 
   @swagger.ApiProperty({
     description: 'The user banner color',
@@ -64,4 +64,5 @@ export class User extends Promise<Omit<PrismaUser, 'password' | 'serverId' | 'ch
     example: 'I am a software developer',
   })
   bio: string;
+  roles: any;
 }
