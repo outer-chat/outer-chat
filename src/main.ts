@@ -13,23 +13,27 @@ import { AppModule } from './modules';
 const port = process.env.PORT || 8080;
 const host = process.env.HOST || '0.0.0.0';
 
+const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+const adminPassword = process.env.ADMIN_PASSWORD || 'admin';
+const adminEmail = process.env.ADMIN_EMAIL || 'admin';
+
 async function createAdminUserIfNotExists() {
   const prisma = new PrismaService();
   const admin = await prisma.user.findUnique({
     where: {
-      email: 'admin',
+      email: adminEmail,
     },
   });
   if (!admin) {
-    const password = 'admin';
+    const password = adminPassword;
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     await prisma.user.create({
       data: {
-        email: 'admin',
-        username: 'admin',
+        email: adminEmail,
+        username: adminUsername,
         password: hashedPassword,
-        roles: ['ADMIN', 'USER'],
+        roles: ['ADMIN'],
       },
     });
   }
