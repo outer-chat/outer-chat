@@ -307,4 +307,39 @@ describe('UserController /user routes', () => {
         });
     });
   });
+
+  describe('DELETE /user/1', () => {
+    it('should delete a user (logged in as an admin)', () => {
+      const mockUser: PrismaUser = {
+        id: '1',
+        email: 'example@example.com',
+        username: 'John Doe',
+        password: 'password',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        avatar: Buffer.from(''),
+        banner: Buffer.from(''),
+        bannerColor: 'blue',
+        bio: 'User bio',
+        serverId: 'server1',
+        channelId: 'channel1',
+        roles: ['USER']
+      };
+
+      jest.spyOn(userService, 'deleteUser').mockResolvedValue(mockUser as unknown as User);
+
+      const payload = { roles: ['ADMIN'] };
+      const token = app.get<JwtService>(JwtService).sign(payload);
+
+      request(app.getHttpServer())
+        .delete('/user/1')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200)
+
+      return request(app.getHttpServer())
+        .get('/user/1')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(404);
+    });
+  });
 });

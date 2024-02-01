@@ -116,4 +116,29 @@ export class UserService {
 
     return updatedUser;
   }
+
+  async deleteUser(id: string): Promise<User> {
+    const user = await this.prisma.user.delete({
+      where: {
+        id: id,
+      },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        createdAt: true,
+        updatedAt: true,
+        avatar: true,
+        banner: true,
+        bannerColor: true,
+        bio: true,
+        roles: true,
+      },
+    });
+
+    if (!user)
+      throw new NotFoundException(`User with id ${id} does not exist!`);
+
+    return user;
+  }
 }

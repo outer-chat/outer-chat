@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, UseGuards } from '@nestjs/common';
 import * as swagger from '@nestjs/swagger';
 
 import { UserService } from '../services';
@@ -47,5 +47,16 @@ export class UserController {
   @UseGuards(SelfGuard)
   patchUser(@Param('id') id: string, @Body() user: User): Promise<User> {
     return this.userService.patchUser(id, user);
+  }
+
+  @swagger.ApiOkResponse({
+    status: 200,
+    description: 'Return the deleted user',
+    type: User,
+  })
+  @Delete(':id')
+  @UseGuards(SelfGuard)
+  deleteUser(@Param('id') id: string): Promise<User> {
+    return this.userService.deleteUser(id);
   }
 }
