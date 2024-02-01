@@ -1,9 +1,9 @@
 import { Controller, Get, Param, Post, Body } from '@nestjs/common';
 import { User as PrismaUser } from '@prisma/client/edge';
-import { Token, User } from 'src/dto';
+import { Token, User } from '../dto';
 import * as swagger from '@nestjs/swagger';
-import { AuthService } from 'src/services/auth.service';
-import { Tokens } from 'src/dto';
+import { AuthService } from '../services/auth.service';
+import { Tokens } from '../dto';
 
 @swagger.ApiTags('auth')
 @Controller('auth')
