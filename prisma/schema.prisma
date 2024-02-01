@@ -26,6 +26,11 @@ enum ChannelType {
   SERVER_MEDIA
 }
 
+enum UserRoles {
+  ADMIN
+  USER
+}
+
 model User {
   id       String @id @default(uuid()) @map("_id")
   email    String @unique
@@ -45,6 +50,8 @@ model User {
   serverId  String?
   Channel   Channel?  @relation(fields: [channelId], references: [id])
   channelId String?
+
+  roles UserRoles[] @default([USER])
 }
 
 model Message {

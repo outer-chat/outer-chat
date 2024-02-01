@@ -55,8 +55,8 @@ export class AuthService {
       },
     });
 
-    const accessToken = this.jwtService.sign({ userId: newUser.id });
-    const refreshToken = this.jwtService.sign({ userId: newUser.id }, { expiresIn: '7d' });
+    const accessToken = this.jwtService.sign({ userId: newUser.id, roles: newUser.roles });
+    const refreshToken = this.jwtService.sign({ userId: newUser.id, roles: newUser.roles }, { expiresIn: '7d' });
 
     return {
       accessToken: {
@@ -69,6 +69,7 @@ export class AuthService {
       }
     };
   }
+
   async loginUser(user: PrismaUser): Promise<Tokens> {
     if (!user?.email && !user?.username)
       throw new BadRequestException('Bad request : username or email is required');
@@ -101,8 +102,8 @@ export class AuthService {
     if (!isPasswordValid)
       throw new UnauthorizedException('Invalid credentials');
 
-    const accessToken = this.jwtService.sign({ userId: foundUser.id });
-    const refreshToken = this.jwtService.sign({ userId: foundUser.id }, { expiresIn: '7d' });
+    const accessToken = this.jwtService.sign({ userId: foundUser.id, roles: foundUser.roles });
+    const refreshToken = this.jwtService.sign({ userId: foundUser.id, roles: foundUser.roles }, { expiresIn: '7d' });
 
     return {
       accessToken: {
@@ -115,6 +116,7 @@ export class AuthService {
       },
     };
   }
+
   async refreshToken(refreshToken: string): Promise<Tokens> {
     const decodedRefreshToken = this.jwtService.verify(refreshToken);
 
@@ -127,8 +129,8 @@ export class AuthService {
     if (!foundUser)
       throw new UnauthorizedException('Invalid credentials');
 
-    const accessToken = this.jwtService.sign({ userId: foundUser.id });
-    const newRefreshToken = this.jwtService.sign({ userId: foundUser.id }, { expiresIn: '7d' });
+    const accessToken = this.jwtService.sign({ userId: foundUser.id, roles: foundUser.roles });
+    const newRefreshToken = this.jwtService.sign({ userId: foundUser.id, roles: foundUser.roles }, { expiresIn: '7d' });
 
     return {
       accessToken: {

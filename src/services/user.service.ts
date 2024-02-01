@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { User } from '../dto';
+import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+  ) {}
 
   async getAllUsers(): Promise<User[]> {
     const users = await this.prisma.user.findMany({
@@ -15,6 +19,10 @@ export class UserService {
         createdAt: true,
         updatedAt: true,
         avatar: true,
+        banner: true,
+        bannerColor: true,
+        bio: true,
+        roles: true,
       },
     });
 
@@ -36,6 +44,7 @@ export class UserService {
         banner: true,
         bannerColor: true,
         bio: true,
+        roles: true,
       },
     });
 

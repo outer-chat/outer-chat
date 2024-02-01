@@ -9,13 +9,26 @@ import { PrismaModule } from '../src/prisma/prisma.module';
 import { User as PrismaUser } from '@prisma/client/edge';
 import { User } from 'src/dto';
 
+import { JwtModule, JwtService } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
 describe('UserController /user routes', () => {
   let app: INestApplication;
   let userService: UserService;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [UserModule, PrismaModule],
+      imports: [
+        UserModule,
+        PrismaModule,
+        JwtModule.registerAsync({
+          imports: [ConfigModule],
+          useFactory: async (configService: ConfigService) => ({
+            secret: configService.get('SECRET'),
+          }),
+          inject: [ConfigService],
+        }),
+      ],
       providers: [UserService],
     }).compile();
 
@@ -28,7 +41,7 @@ describe('UserController /user routes', () => {
     await app.close();
   });
 
-  it('should return all users', () => {
+  it('should return all users (logged in as an admin)', () => {
     const mockUsers: PrismaUser[] = [
       {
         id: '1',
@@ -42,7 +55,8 @@ describe('UserController /user routes', () => {
         bannerColor: 'blue',
         bio: 'User bio',
         serverId: 'server1',
-        channelId: 'channel1'
+        channelId: 'channel1',
+        roles: ['USER']
       },
       {
         id: '2',
@@ -56,14 +70,19 @@ describe('UserController /user routes', () => {
         bannerColor: 'red',
         bio: 'User bio',
         serverId: 'server2',
-        channelId: 'channel2'
+        channelId: 'channel2',
+        roles: ['USER']
       },
     ];
 
     jest.spyOn(userService, 'getAllUsers').mockResolvedValue(mockUsers as unknown as User[]);
 
+    const payload = { roles: ['ADMIN'] };
+    const token = app.get<JwtService>(JwtService).sign(payload);
+
     return request(app.getHttpServer())
       .get('/user/all')
+      .set('Authorization', `Bearer ${token}`)
       .expect(200)
       .expect((res) => {
         const expectedUsers = mockUsers.map((user) => ({
@@ -77,7 +96,33 @@ describe('UserController /user routes', () => {
       });
   });
 
-  it('should return a user', () => {
+  it ('should return a 401 error on /user/all (not logged in)', () => {
+    return request(app.getHttpServer())
+      .get('/user/all')
+      .expect(401);
+  });
+
+  it ('should return a 401 error on /user/all (wrong token)', () => {
+    const payload = { roles: ['ADMIN'] };
+    const token = app.get<JwtService>(JwtService).sign(payload);
+
+    return request(app.getHttpServer())
+      .get('/user/all')
+      .set('Authorization', `Bearer ${token}wrong`)
+      .expect(401);
+  });
+
+  it ('should return a 403 error on /user/all (logged in as an user)', () => {
+    const payload = { roles: ['USER'] };
+    const token = app.get<JwtService>(JwtService).sign(payload);
+
+    return request(app.getHttpServer())
+      .get('/user/all')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(403);
+  });
+
+  it('should return a user (logged in as an user)', () => {
     const mockUsers: PrismaUser[] = [
       {
         id: '1',
@@ -91,7 +136,8 @@ describe('UserController /user routes', () => {
         bannerColor: 'blue',
         bio: 'User bio',
         serverId: 'server1',
-        channelId: 'channel1'
+        channelId: 'channel1',
+        roles: ['USER']
       },
       {
         id: '2',
@@ -105,14 +151,19 @@ describe('UserController /user routes', () => {
         bannerColor: 'red',
         bio: 'User bio',
         serverId: 'server2',
-        channelId: 'channel2'
+        channelId: 'channel2',
+        roles: ['USER']
       },
     ];
 
     jest.spyOn(userService, 'getUser').mockResolvedValue(mockUsers[0] as unknown as User);
 
+    const payload = { roles: ['USER']};
+    const token = app.get<JwtService>(JwtService).sign(payload);
+
     return request(app.getHttpServer())
       .get('/user/1')
+      .set('Authorization', `Bearer ${token}`)
       .expect(200)
       .expect((res) => {
         const expectedUser = {
@@ -124,5 +175,21 @@ describe('UserController /user routes', () => {
         };
         expect(res.body).toEqual(expectedUser);
       });
+  });
+
+  it('should return a 401 error on /user/1 (not logged in)', () => {
+    return request(app.getHttpServer())
+      .get('/user/1')
+      .expect(401);
+  });
+
+  it('should return a 401 error on /user/1 (wrong token)', () => {
+    const payload = { roles: ['USER'] };
+    const token = app.get<JwtService>(JwtService).sign(payload);
+
+    return request(app.getHttpServer())
+      .get('/user/1')
+      .set('Authorization', `Bearer ${token}wrong`)
+      .expect(401);
   });
 });

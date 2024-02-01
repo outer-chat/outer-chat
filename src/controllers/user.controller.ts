@@ -1,7 +1,12 @@
-import { Controller, Get, Param } from '@nestjs/common';
-import { UserService } from '../services';
+import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
 import * as swagger from '@nestjs/swagger';
+
+import { UserService } from '../services';
 import { User } from '../dto';
+
+import { Role } from '../roles/roles.enum';
+import { Roles } from '../roles/roles.decorator';
+import { RolesGuard } from '../roles/roles.guard';
 
 @swagger.ApiTags('user')
 @Controller('user')
@@ -14,7 +19,9 @@ export class UserController {
     type: [User],
   })
   @Get('all')
-  getUsers(): Promise<User[]> {
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
+  getAllUsers(): Promise<User[]> {
     return this.userService.getAllUsers();
   }
 
@@ -24,6 +31,8 @@ export class UserController {
     type: User,
   })
   @Get(':id')
+  @Roles(Role.USER)
+  @UseGuards(RolesGuard)
   getUser(@Param('id') id: string): Promise<User> {
     return this.userService.getUser(id);
   }
