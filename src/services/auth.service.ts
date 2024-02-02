@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { Tokens } from '../dto';
 import * as bcrypt from 'bcrypt';
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
@@ -58,8 +59,8 @@ export class AuthService {
       },
     });
 
-    const accessToken = this.jwtService.sign({ userId: newUser.id, roles: newUser.roles });
-    const refreshToken = this.jwtService.sign({ userId: newUser.id, roles: newUser.roles }, { expiresIn: '7d' });
+    const accessToken = jwt.sign({ userId: newUser.id, roles: newUser.roles }, process.env.SECRET, { expiresIn: '1h' });
+    const refreshToken = jwt.sign({ userId: newUser.id, roles: newUser.roles }, process.env.SECRET, { expiresIn: '7d' });
 
     return {
       accessToken: {
@@ -105,8 +106,8 @@ export class AuthService {
     if (!isPasswordValid)
       throw new UnauthorizedException('Invalid credentials');
 
-    const accessToken = this.jwtService.sign({ userId: foundUser.id, roles: foundUser.roles });
-    const refreshToken = this.jwtService.sign({ userId: foundUser.id, roles: foundUser.roles }, { expiresIn: '7d' });
+    const accessToken = jwt.sign({ userId: foundUser.id, roles: foundUser.roles }, process.env.SECRET, { expiresIn: '1h' });
+    const refreshToken = jwt.sign({ userId: foundUser.id, roles: foundUser.roles }, process.env.SECRET, { expiresIn: '7d' });
 
     return {
       accessToken: {
@@ -116,7 +117,7 @@ export class AuthService {
       refreshToken: {
         token: refreshToken,
         tokenExpiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000),
-      },
+      }
     };
   }
 
@@ -132,8 +133,8 @@ export class AuthService {
     if (!foundUser)
       throw new UnauthorizedException('Invalid credentials');
 
-    const accessToken = this.jwtService.sign({ userId: foundUser.id, roles: foundUser.roles });
-    const newRefreshToken = this.jwtService.sign({ userId: foundUser.id, roles: foundUser.roles }, { expiresIn: '7d' });
+    const accessToken = jwt.sign({ userId: foundUser.id, roles: foundUser.roles }, process.env.SECRET, { expiresIn: '1h' });
+    const newRefreshToken = jwt.sign({ userId: foundUser.id, roles: foundUser.roles }, process.env.SECRET, { expiresIn: '7d' });
 
     return {
       accessToken: {
@@ -143,7 +144,7 @@ export class AuthService {
       refreshToken: {
         token: newRefreshToken,
         tokenExpiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000),
-      },
+      }
     };
   }
 }
