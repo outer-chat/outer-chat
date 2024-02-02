@@ -30,7 +30,7 @@ export class RolesGuard implements CanActivate {
             }
 
             const userRoles = payload.roles;
-            const hasRole = () => userRoles.some((role) => roles.includes(role));
+            const hasRole = () => userRoles.some((role: string) => roles.includes(role));
             return payload && payload.roles && hasRole();
         } catch (error) {
             throw new UnauthorizedException('Invalid authorization token');
