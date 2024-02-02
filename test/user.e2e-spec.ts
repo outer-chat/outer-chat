@@ -215,7 +215,7 @@ describe('UserController /user routes', () => {
         roles: ['USER']
       };
 
-      jest.spyOn(userService, 'patchUser').mockResolvedValue(mockUser as unknown as User);
+      jest.spyOn(userService, 'patchUser').mockResolvedValue("User updated successfully!");
 
       const requestBody = { username: 'Jane Smith' };
 
@@ -227,16 +227,7 @@ describe('UserController /user routes', () => {
         .set('Authorization', `Bearer ${token}`)
         .send(requestBody)
         .expect(200)
-        .expect((res) => {
-          const expectedUser = {
-            ...mockUser,
-            createdAt: mockUser.createdAt.toISOString(),
-            updatedAt: mockUser.updatedAt.toISOString(),
-            avatar: { data: [], type: 'Buffer' },
-            banner: { data: [], type: 'Buffer' },
-          };
-          expect(res.body).toEqual(expectedUser);
-        });
+        .expect("User updated successfully!");
     });
 
     it('should return a 401 error on /user/1 (logged as another user than the one being patched)', () => {
@@ -256,7 +247,7 @@ describe('UserController /user routes', () => {
         roles: ['USER']
       };
 
-      jest.spyOn(userService, 'patchUser').mockResolvedValue(mockUser as unknown as User);
+      jest.spyOn(userService, 'patchUser').mockReturnValue(Promise.resolve(mockUser as unknown as string));
 
       const payload = { roles: ['USER'] };
       const token = app.get<JwtService>(JwtService).sign(payload);
@@ -285,7 +276,7 @@ describe('UserController /user routes', () => {
         roles: ['USER']
       };
 
-      jest.spyOn(userService, 'patchUser').mockResolvedValue(mockUser as unknown as User);
+      jest.spyOn(userService, 'patchUser').mockResolvedValue("User updated successfully!");
 
       const payload = { userId: '1', roles: ['USER'] };
       const token = app.get<JwtService>(JwtService).sign(payload);
@@ -295,16 +286,7 @@ describe('UserController /user routes', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({ username: 'Jane Smith' })
         .expect(200)
-        .expect((res) => {
-          const expectedUser = {
-            ...mockUser,
-            createdAt: mockUser.createdAt.toISOString(),
-            updatedAt: mockUser.updatedAt.toISOString(),
-            avatar: { data: [], type: 'Buffer' },
-            banner: { data: [], type: 'Buffer' },
-          };
-          expect(res.body).toEqual(expectedUser);
-        });
+        .expect("User updated successfully!");
     });
   });
 
@@ -326,7 +308,7 @@ describe('UserController /user routes', () => {
         roles: ['USER']
       };
 
-      jest.spyOn(userService, 'deleteUser').mockResolvedValue(mockUser as unknown as User);
+      jest.spyOn(userService, 'deleteUser').mockResolvedValue("User deleted successfully!");
 
       const payload = { roles: ['ADMIN'] };
       const token = app.get<JwtService>(JwtService).sign(payload);

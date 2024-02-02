@@ -1,5 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from '../dto';
+import { User as PrimsaUser } from '@prisma/client/edge';
+import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -54,7 +56,7 @@ export class UserService {
     return user;
   }
 
-  async patchUser(id: string, user: User): Promise<User> {
+  async patchUser(id: string, user: PrimsaUser): Promise<string> {
     const allowedUsernameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@";
 
     if (user.username && user.username.split('').some((char: string) => !allowedUsernameCharacters.includes(char)))
@@ -85,6 +87,17 @@ export class UserService {
         throw new BadRequestException('Username is already taken');
     }
 
+    if (user.password) {
+      if (typeof user.password !== 'string' || user.password.trim() === '')
+        throw new BadRequestException('Password must be a non empty string');
+
+      if (!user.password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/))
+        throw new BadRequestException('Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character');
+
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(user.password, salt);
+    }
+
     const updatedUser = await this.prisma.user.update({
       where: {
         id: id,
@@ -96,6 +109,7 @@ export class UserService {
         banner: user?.banner ?? undefined,
         bannerColor: user?.bannerColor ?? undefined,
         bio: user?.bio ?? undefined,
+        password: user?.password ?? undefined,
       },
       select: {
         id: true,
@@ -114,10 +128,10 @@ export class UserService {
     if (!updatedUser)
       throw new NotFoundException(`User with id ${id} does not exist!`);
 
-    return updatedUser;
+    return "User updated successfully!";
   }
 
-  async deleteUser(id: string): Promise<User> {
+  async deleteUser(id: string): Promise<string> {
     const user = await this.prisma.user.delete({
       where: {
         id: id,
@@ -139,6 +153,6 @@ export class UserService {
     if (!user)
       throw new NotFoundException(`User with id ${id} does not exist!`);
 
-    return user;
+    return "User deleted successfully!";
   }
 }

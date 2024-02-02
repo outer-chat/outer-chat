@@ -3,6 +3,7 @@ import * as swagger from '@nestjs/swagger';
 
 import { UserService } from '../services';
 import { User } from '../dto';
+import { User as PrismaUser } from '@prisma/client/edge';
 
 import { Role } from '../permissions/roles/roles.enum';
 import { Roles } from '../permissions/roles/roles.decorator';
@@ -40,23 +41,23 @@ export class UserController {
 
   @swagger.ApiOkResponse({
     status: 200,
-    description: 'Return the patched user',
-    type: User,
+    description: 'Return the patched user and a message',
+    type: String
   })
   @Patch(':id')
   @UseGuards(SelfGuard)
-  patchUser(@Param('id') id: string, @Body() user: User): Promise<User> {
+  patchUser(@Param('id') id: string, @Body() user: PrismaUser): Promise<string> {
     return this.userService.patchUser(id, user);
   }
 
   @swagger.ApiOkResponse({
     status: 200,
     description: 'Return the deleted user',
-    type: User,
+    type: String
   })
   @Delete(':id')
   @UseGuards(SelfGuard)
-  deleteUser(@Param('id') id: string): Promise<User> {
+  deleteUser(@Param('id') id: string): Promise<string> {
     return this.userService.deleteUser(id);
   }
 }
