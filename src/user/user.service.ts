@@ -57,6 +57,15 @@ export class UserService {
   }
 
   async patchUser(id: string, user: PrimsaUser): Promise<string> {
+    const userExists = await this.prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!userExists)
+      throw new NotFoundException(`User with id ${id} does not exist!`);
+
     const allowedUsernameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@";
 
     if (user.username && user.username.split('').some((char: string) => !allowedUsernameCharacters.includes(char)))
