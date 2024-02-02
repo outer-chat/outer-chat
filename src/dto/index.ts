@@ -1,5 +1,5 @@
-import { User } from "./User";
-import { Tokens, Token } from "./Tokens";
+import { User } from "../user/dto/User";
+import { Tokens, Token } from "../auth/dto/Tokens";
 
 export {
     User,

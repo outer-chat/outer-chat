@@ -5,10 +5,10 @@ import { UserService } from '../services';
 import { User } from '../dto';
 import { User as PrismaUser } from '@prisma/client/edge';
 
-import { Role } from '../permissions/roles/roles.enum';
-import { Roles } from '../permissions/roles/roles.decorator';
-import { RolesGuard } from '../permissions/roles/roles.guard';
-import { SelfGuard } from '../permissions/self/self.guard';
+import { Role } from '../guards/roles/roles.enum';
+import { Roles } from '../guards/roles/roles.decorator';
+import { RolesGuard } from '../guards/roles/roles.guard';
+import { SelfGuard } from '../guards/self/self.guard';
 
 @swagger.ApiTags('user')
 @Controller('user')
