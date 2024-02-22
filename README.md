@@ -1,19 +1,28 @@
+# outer.chat 🚀
+
 <p align="center">
   <a target="blank"><img src=".readme/outerchat.png" width="500" alt="Outer-Chat logo" /></a>
 </p>
 
 <p align="center">
-  A open-source <strong>Discord-like</strong> alternative. A place to hang-out <em><strong>safely</strong></em> with your friends.
+  An open-source <strong>Discord-like</strong> alternative. A place to hang-out <em><strong>safely</strong></em> with your friends.
 </p>
 
-## Description
+> [!WARNING]
+> This project is still in early developpment.
 
-### The project is not finished yet (AT ALL, we only are on the preamble). It's a work in progress.
+## Quick look 📸
 
-outer.chat is a open-source Discord like alternative. Made with NestJS and Prisma.
-Having a REST-API for standard requests. And use WebRTC and Socket.io for real-time communication.
+**outer.chat** is an open-source alternative to Discord, built with NestJS and Prisma. It provides a REST API for standard requests and utilizes WebRTC and Socket.io for real-time communication.
 
-## Installation
+## Features 🎉
+
+- **Real-time communication** : With WebRTC and Socket.io, you can communicate with your friends in real-time.
+- **Open-source** : You can contribute to the project and see the code.
+- **Self-hosted** : You can host the application on your own server.
+- **Customizable** : You can customize the application to match your needs thanks to admin permissions.
+
+## Installation 🧰
 
 ### From source
 
@@ -63,11 +72,12 @@ git submodule update
 
 For any question about the clientapp, please refer to the README of the clientapp.
 
-## Documentation
+## Documentation 📑
 
-The documentation is available after the server is started at the `/api` route. (eg. `http://localhost:3000/api`)
+For end users, you can see the api documentation when the server is started at the `/api` route. (eg. `http://localhost:3000/api`)
+For further documentation, (the developer documentation), you can access it in the [docs](docs) folder.
 
-## Running tests
+## Running tests 🧪
 
 At the moment, there is only e2e tests. They should cover the major part of the application.
 
@@ -76,9 +86,9 @@ npm install
 npm run test:e2e
 ```
 
-## Support
+## Support ❤️
 
-outer.chat is an open-source project. You are invited to contribute. You can also support the project by giving a star ⭐️.
+**outer.chat** is an open-source project. You are invited to contribute. You can also support the project by giving a star ⭐️.
 The project is still in development, so keep in mind that you can't use it at it full potential yet.
 
 ## Contributing
@@ -86,18 +96,10 @@ The project is still in development, so keep in mind that you can't use it at it
 Contributions are welcome. Feel free to open a pull request or an issue.
 For the commit naming convention, please stick to the [gitkarma](https://karma-runner.github.io/6.4/dev/git-commit-msg.html) convention.
 
-## Stay in touch
-
-- Author - [Jean-Yanis JEFFROY](https://jeffroy.eu)
-
 ## License
 
 The code in this repository is released under the GNU AFFERO GENERAL PUBLIC LICENSE, version 3. A copy can be found in the [LICENSE](LICENSE) file.
 
 <p align="center">
   <a target="blank"><img src=".readme/favicon.png" width="100" alt="Outer-Chat logo" /></a>
-</p>
-
-<p align="center">
-  <strong>outer.chat</strong> is not affiliated, associated, authorized, endorsed by, or in any way officially connected with Discord, or any of its subsidiaries or its affiliates.
 </p>
