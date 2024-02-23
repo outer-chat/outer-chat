@@ -46,12 +46,42 @@ model User {
 
   bio       String?
   Message   Message[]
-  Server    Server?   @relation(fields: [serverId], references: [id])
-  serverId  String?
-  Channel   Channel?  @relation(fields: [channelId], references: [id])
+  servers   Server[]  @relation("ServerOwner")
+  Channel   Channel?  @relation(fields: [channelId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   channelId String?
 
   roles UserRoles[] @default([USER])
+  Log   Log[]
+
+  friends  Friend[] @relation("UserToFriends")
+  friendOf Friend[] @relation("FriendsToUser")
+
+  memberOf ServerMember[] @relation("UserToServerMember")
+
+  @@index([username, email])
+}
+
+model Friend {
+  id       String @id @default(uuid()) @map("_id")
+  userId   String
+  friendId String
+
+  user   User @relation(name: "UserToFriends", fields: [userId], references: [id])
+  friend User @relation(name: "FriendsToUser", fields: [friendId], references: [id])
+
+  @@unique([userId, friendId])
+}
+
+model ServerMember {
+  id       String      @id @default(uuid()) @map("_id")
+  serverId String
+  userId   String
+  roles    UserRoles[]
+
+  user   User   @relation(name: "UserToServerMember", fields: [userId], references: [id])
+  server Server @relation(name: "ServerToServerMember", fields: [serverId], references: [id])
+
+  @@unique([serverId, userId])
 }
 
 model Message {
@@ -65,6 +95,8 @@ model Message {
   content   String
   channel   Channel @relation(fields: [channelId], references: [id])
   channelId String
+
+  @@index([channelId, createdAt])
 }
 
 model PermissionOverwrite {
@@ -99,6 +131,45 @@ model Channel {
   description          String?
   position             Int?
   permissionOverwrites PermissionOverwrite[]
+
+  @@index([serverId, position])
+}
+
+model Roles {
+  id        String   @id @default(uuid()) @map("_id")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String
+  permissions String[]
+  color       String
+  hoist       Boolean
+  mentionable Boolean
+
+  Server   Server @relation(fields: [serverId], references: [id])
+  serverId String
+
+  @@unique([name, serverId])
+  @@index([serverId, name])
+}
+
+model Log {
+  id        String   @id @default(uuid()) @map("_id")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  type    String
+  message String
+
+  Server   Server @relation(fields: [serverId], references: [id])
+  serverId String
+
+  author   User?   @relation(fields: [authorId], references: [id])
+  authorId String?
+
+  @@unique([serverId, authorId, createdAt])
+  @@index([serverId, createdAt])
+  @@index([authorId, createdAt])
 }
 
 model Server {
@@ -106,7 +177,18 @@ model Server {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name     String
-  channels Channel[]
-  members  User[]
+  name        String
+  owner       User           @relation(name: "ServerOwner", fields: [ownerId], references: [id])
+  ownerId     String         @map("owner_id")
+  members     ServerMember[] @relation("ServerToServerMember")
+  channels    Channel[]
+  memberId    String
+  roles       Roles[]
+  icon        Bytes?
+  banner      Bytes?
+  bannerColor String?
+  description String?
+  logs        Log[]
+
+  @@unique([name, ownerId])
 }

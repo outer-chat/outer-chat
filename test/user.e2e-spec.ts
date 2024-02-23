@@ -55,7 +55,6 @@ describe('UserController /user routes', () => {
           banner: Buffer.from(''),
           bannerColor: 'blue',
           bio: 'User bio',
-          serverId: 'server1',
           channelId: 'channel1',
           roles: ['USER']
         },
@@ -70,7 +69,6 @@ describe('UserController /user routes', () => {
           banner: Buffer.from(''),
           bannerColor: 'red',
           bio: 'User bio',
-          serverId: 'server2',
           channelId: 'channel2',
           roles: ['USER']
         },
@@ -138,7 +136,6 @@ describe('UserController /user routes', () => {
           banner: Buffer.from(''),
           bannerColor: 'blue',
           bio: 'User bio',
-          serverId: 'server1',
           channelId: 'channel1',
           roles: ['USER']
         },
@@ -153,7 +150,6 @@ describe('UserController /user routes', () => {
           banner: Buffer.from(''),
           bannerColor: 'red',
           bio: 'User bio',
-          serverId: 'server2',
           channelId: 'channel2',
           roles: ['USER']
         },
@@ -210,7 +206,6 @@ describe('UserController /user routes', () => {
         banner: Buffer.from(''),
         bannerColor: 'blue',
         bio: 'User bio',
-        serverId: 'server1',
         channelId: 'channel1',
         roles: ['USER']
       };
@@ -242,7 +237,6 @@ describe('UserController /user routes', () => {
         banner: Buffer.from(''),
         bannerColor: 'blue',
         bio: 'User bio',
-        serverId: 'server1',
         channelId: 'channel1',
         roles: ['USER']
       };
@@ -271,7 +265,6 @@ describe('UserController /user routes', () => {
         banner: Buffer.from(''),
         bannerColor: 'blue',
         bio: 'User bio',
-        serverId: 'server1',
         channelId: 'channel1',
         roles: ['USER']
       };
@@ -303,7 +296,6 @@ describe('UserController /user routes', () => {
         banner: Buffer.from(''),
         bannerColor: 'blue',
         bio: 'User bio',
-        serverId: 'server1',
         channelId: 'channel1',
         roles: ['USER']
       };
