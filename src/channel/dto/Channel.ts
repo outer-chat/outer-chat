@@ -1,6 +1,6 @@
 import * as swagger from '@nestjs/swagger';
 import { Channel as PrismaChannel, ChannelType as PrismaChannelType } from '@prisma/client/edge';
-import { User, Message, PermissionOverwrite } from 'src/dto';
+import { User, Message, PermissionOverwrite } from '../../dto';
 
 export class Channel extends Promise<Omit<PrismaChannel, 'serverId' | 'Server'>> {
     @swagger.ApiProperty({
