@@ -19,6 +19,16 @@ const adminUsername = process.env.ADMIN_USERNAME || 'admin';
 const adminEmail = process.env.ADMIN_EMAIL || 'admin';
 const adminPasswordSaveFilePath = process.env.ADMIN_PASSWORD_SAVE_FILE_PATH || './admin-password.txt';
 
+function generatePassword() {
+  var length = 22,
+      charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$&@-_#",
+      retVal = "";
+  for (var i = 0, n = charset.length; i < length; ++i) {
+      retVal += charset.charAt(Math.floor(Math.random() * n));
+  }
+  return retVal;
+}
+
 async function createAdminUserIfNotExists() {
   const logger = new Logger('AdminUserCreation');
   const prisma = new PrismaService();
@@ -28,7 +38,7 @@ async function createAdminUserIfNotExists() {
     },
   });
   if (!admin) {
-    const password = Math.random().toString(36);
+    const password = generatePassword();
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     await prisma.user.create({
