@@ -68,7 +68,7 @@ export class Channel extends Promise<Omit<PrismaChannel, 'serverId' | 'Server'>>
 
     @swagger.ApiProperty({
         description: 'The channel recipients',
-        type: [User],
+        type: [],
         example: [],
     })
     recipients: User[];
