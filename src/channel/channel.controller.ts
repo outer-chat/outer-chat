@@ -30,7 +30,7 @@ export class ChannelController {
         type: [Channel],
     })
     @Roles(Role.ADMIN)
-    @UseGuards(RolesGuard, ChannelGuard)
+    @UseGuards(RolesGuard)
     @Get()
     getChannels(): Promise<Channel[]> {
         return this.channelService.getChannels();
@@ -42,7 +42,7 @@ export class ChannelController {
         type: String,
     })
     @Roles(Role.USER, Role.ADMIN)
-    @UseGuards(RolesGuard, ChannelGuard)
+    @UseGuards(RolesGuard)
     @Post()
     createChannel(@Body() channel: Channel): Promise<string> {
         return this.channelService.createChannel(channel);
