@@ -16,8 +16,8 @@ export class AuthService {
   async registerUser(user: PrismaUser): Promise<Tokens> {
     const allowedUsernameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@";
 
-    if (!user.email || !user.password || !user.username)
-      throw new BadRequestException('Bad request : username, password and mail fields are required');
+    if (!user || !user.email || !user.password || !user.username)
+      throw new BadRequestException('Bad request : username, password and email fields are required');
     if (user.username.split('').some((char: string) => !allowedUsernameCharacters.includes(char)))
       throw new BadRequestException('Username contains invalid characters, allowed characters are: a-z, A-Z, 0-9, -, ., _, @');
 
