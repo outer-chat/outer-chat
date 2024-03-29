@@ -28,6 +28,7 @@ export class RolesGuard implements CanActivate {
             if (!payload) {
                 throw new UnauthorizedException('Authorization token is invalid');
             }
+            request.user = payload;
 
             const userRoles = payload.roles;
             const hasRole = () => userRoles.some((role: string) => roles.includes(role));
