@@ -20,6 +20,8 @@ export class ChannelService {
       },
     });
 
+    channel.recipients = channel.recipients.map((recipient) => recipient.userId) as any;
+
     if (!channel)
       throw new NotFoundException(`Channel with id ${id} does not exist!`);
 
