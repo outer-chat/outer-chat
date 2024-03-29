@@ -35,24 +35,19 @@ export class ChannelService {
       },
     });
 
-    channels.forEach((channel) => {
-      channel.recipients.forEach((recipient) => {
-        delete recipient.password;
-        delete recipient.channelId;
-      });
-    });
-
     return channels as unknown as Channel[];
   }
 
-  async createChannel(channel: Channel) : Promise<string> {
-
+  async createChannel(channel: Channel, ownerId: string) : Promise<string> {
+    if (!ownerId)
+      throw new BadRequestException('Owner id must be provided to create a channel!');
     if (!channel.recipients || channel.recipients.length === 0)
       throw new BadRequestException('No recipients have been provided can\'t proceed with channel creation!');
 
     const newChannel = await this.prisma.channel.create({
       data: {
         ...channel,
+        ownerId: ownerId,
         messages: {
           create: channel.messages?.map((message) => ({
             ...message,

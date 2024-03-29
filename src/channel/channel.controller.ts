@@ -1,5 +1,5 @@
 import * as swagger from '@nestjs/swagger';
-import { Controller, Get, Param, Post, Body, UseGuards, Delete, Patch } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, UseGuards, Delete, Patch, Request } from '@nestjs/common';
 import { Channel } from './dto/Channel';
 import { ChannelService } from './channel.service';
 import { Roles } from 'src/guards/roles/roles.decorator';
@@ -44,8 +44,9 @@ export class ChannelController {
     @Roles(Role.USER, Role.ADMIN)
     @UseGuards(RolesGuard)
     @Post()
-    createChannel(@Body() channel: Channel): Promise<string> {
-        return this.channelService.createChannel(channel);
+    createChannel(@Body() channel: Channel, @Request() req: any): Promise<string> {
+        const ownerId = req.user.userId;
+        return this.channelService.createChannel(channel, ownerId);
     }
 
     @swagger.ApiOkResponse({
