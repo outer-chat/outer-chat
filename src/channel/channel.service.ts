@@ -192,4 +192,23 @@ export class ChannelService {
 
     return `Channel with id ${updatedChannel.id} has been updated!`;
   }
+
+  async deleteChannel(channelId: string) : Promise<string> {
+    const channel = await this.prisma.channel.findUnique({
+      where: {
+        id: channelId,
+      },
+    });
+
+    if (!channel)
+      throw new NotFoundException(`Channel with id ${channelId} does not exist`);
+
+    await this.prisma.channel.delete({
+      where: {
+        id: channelId,
+      },
+    });
+
+    return `Channel with id ${channelId} has been deleted!`;
+  }
 }

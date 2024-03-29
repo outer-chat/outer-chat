@@ -83,4 +83,16 @@ export class ChannelController {
     editChannel(@Param('id') id: string, @Body() channel: Channel): Promise<string> {
         return this.channelService.channelEdition(id, channel);
     }
+
+    @swagger.ApiOkResponse({
+        status: 200,
+        description: 'Delete a channel',
+        type: String,
+    })
+    @Roles(Role.USER, Role.ADMIN)
+    @UseGuards(RolesGuard)
+    @Delete(':id')
+    deleteChannel(@Param('id') id: string): Promise<string> {
+        return this.channelService.deleteChannel(id);
+    }
 }
