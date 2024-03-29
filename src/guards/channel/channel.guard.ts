@@ -1,12 +1,13 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ChannelGuard implements CanActivate {
-  constructor(private reflector: Reflector, private jwtService: JwtService) {}
+  constructor(private reflector: Reflector, private jwtService: JwtService, private prisma: PrismaService) {}
 
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const channelId = request.params.id;
 
@@ -20,12 +21,18 @@ export class ChannelGuard implements CanActivate {
       throw new UnauthorizedException('Token is missing.');
     }
 
-
     try {
-        const user = this.jwtService.decode(token);
-        if (!user) {
+        const userPayload = this.jwtService.decode(token);
+        if (!userPayload) {
           throw new UnauthorizedException('Invalid token.');
         }
+
+        const user = await this.prisma.user.findUnique({
+          where: {
+            id: userPayload.userId,
+          }
+        });
+
         if (user.channelId.includes(channelId)) {
             return true;
         } else {
