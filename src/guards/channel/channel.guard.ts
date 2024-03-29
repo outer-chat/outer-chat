@@ -30,10 +30,13 @@ export class ChannelGuard implements CanActivate {
         const user = await this.prisma.user.findUnique({
           where: {
             id: userPayload.userId,
-          }
+          },
+          include: {
+            channels: true,
+          },
         });
 
-        if (user.channelId.includes(channelId)) {
+        if (user.channels.includes(channelId)) {
             return true;
         } else {
             throw new UnauthorizedException('You do not have permission to access this channel.');
