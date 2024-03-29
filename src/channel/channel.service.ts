@@ -118,4 +118,38 @@ export class ChannelService {
 
     return `Recipient(s) with id(s) ${recipientIds.join(', ')} have been added to channel with id ${updatedChannel.id}!`;
   }
+
+  async removeRecipients(channelId: string, recipientIds: string[]) : Promise<string> {
+    const channel = await this.prisma.channel.findUnique({
+      where: {
+        id: channelId,
+      },
+    });
+
+    if (!channel)
+      throw new NotFoundException(`Channel with id ${channelId} does not exist`);
+
+    if (!Array.isArray(recipientIds))
+      throw new BadRequestException('Recipient(s) must be an array of string(s)');
+    if (recipientIds.length === 0)
+      throw new BadRequestException('Recipient(s) must not be empty');
+
+    const updatedChannel = await this.prisma.channel.update({
+      where: {
+        id: channelId,
+      },
+      data: {
+        recipients: {
+          disconnect: recipientIds.map((id) => ({
+            id: id,
+          })),
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return `Recipient(s) with id(s) ${recipientIds.join(', ')} have been removed from channel with id ${updatedChannel.id}!`;
+  }
 }
