@@ -47,4 +47,16 @@ export class ChannelController {
     createChannel(@Body() channel: Channel): Promise<string> {
         return this.channelService.createChannel(channel);
     }
+
+    @swagger.ApiOkResponse({
+        status: 200,
+        description: 'Add a recipient(s) to a channel',
+        type: String,
+    })
+    @Roles(Role.USER, Role.ADMIN)
+    @UseGuards(RolesGuard)
+    @Post(':id/recipients')
+    addRecipients(@Param('id') id: string, @Body() recipients: string[]): Promise<string> {
+        return this.channelService.addRecipients(id, recipients);
+    }
 }
