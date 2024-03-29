@@ -35,6 +35,10 @@ export class ChannelService {
       },
     });
 
+    channels.forEach((channel) => {
+      channel.recipients = channel.recipients.map((recipient) => recipient.userId) as any;
+    });
+
     return channels as unknown as Channel[];
   }
 
@@ -43,37 +47,39 @@ export class ChannelService {
       throw new BadRequestException('Owner id must be provided to create a channel!');
     if (!channel.recipients || channel.recipients.length === 0)
       throw new BadRequestException('No recipients have been provided can\'t proceed with channel creation!');
+    if (!Array.isArray(channel.recipients))
+      throw new BadRequestException('Recipients must be an array of user(s)');
 
     const newChannel = await this.prisma.channel.create({
       data: {
-        ...channel,
-        ownerId: ownerId,
-        messages: {
-          create: channel.messages?.map((message) => ({
-            ...message,
-            author: {
-              connect: {
-                id: message.authorId,
-              },
-            },
-          })) || [],
-        },
-        recipients: {
-          connect: channel.recipients?.map((recipient) => ({
-            id: recipient.toString(),
-          })) || [],
-        },
-        permissionOverwrites: {
-          create: channel.permissionOverwrites?.map((permissionOverwrite) => ({
-            ...permissionOverwrite,
-            type: Number(permissionOverwrite.type),
-            allow: permissionOverwrite.allow.toString(),
-            deny: permissionOverwrite.deny.toString(),
-          })) || [],
-        },
+          ...channel,
+          ownerId: ownerId,
+          messages: {
+            create: channel.messages?.map((message) => ({
+                ...message,
+                author: {
+                  connect: {
+                      id: message.authorId,
+                  },
+                },
+            })) || [],
+          },
+          recipients: {
+            create: channel.recipients.map((recipient) => ({
+            userId: recipient as any,
+            })),
+          },
+          permissionOverwrites: {
+            create: channel.permissionOverwrites?.map((permissionOverwrite) => ({
+                ...permissionOverwrite,
+                type: Number(permissionOverwrite.type),
+                allow: permissionOverwrite.allow.toString(),
+                deny: permissionOverwrite.deny.toString(),
+            })) || [],
+          },
       },
       select: {
-        id: true,
+          id: true,
       },
     });
 
