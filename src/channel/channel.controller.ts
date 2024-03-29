@@ -5,6 +5,7 @@ import { ChannelService } from './channel.service';
 import { Roles } from 'src/guards/roles/roles.decorator';
 import { Role } from 'src/guards/roles/roles.enum';
 import { RolesGuard } from 'src/guards/roles/roles.guard';
+import { ChannelGuard } from 'src/guards/channel/channel.guard';
 
 @swagger.ApiTags('channels')
 @Controller('channels')
@@ -17,7 +18,7 @@ export class ChannelController {
         type: Channel,
     })
     @Roles(Role.USER, Role.ADMIN)
-    @UseGuards(RolesGuard)
+    @UseGuards(RolesGuard, ChannelGuard)
     @Get(':id')
     getChannel(@Param('id') id: string): Promise<Channel> {
         return this.channelService.getChannel(id);
@@ -29,7 +30,7 @@ export class ChannelController {
         type: [Channel],
     })
     @Roles(Role.ADMIN)
-    @UseGuards(RolesGuard)
+    @UseGuards(RolesGuard, ChannelGuard)
     @Get()
     getChannels(): Promise<Channel[]> {
         return this.channelService.getChannels();
@@ -41,7 +42,7 @@ export class ChannelController {
         type: String,
     })
     @Roles(Role.USER, Role.ADMIN)
-    @UseGuards(RolesGuard)
+    @UseGuards(RolesGuard, ChannelGuard)
     @Post()
     createChannel(@Body() channel: Channel): Promise<string> {
         return this.channelService.createChannel(channel);
