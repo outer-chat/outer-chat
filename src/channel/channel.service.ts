@@ -152,4 +152,44 @@ export class ChannelService {
 
     return `Recipient(s) with id(s) ${recipientIds.join(', ')} have been removed from channel with id ${updatedChannel.id}!`;
   }
+
+  async channelEdition(channelId: string, channel: Channel) : Promise<string> {
+    const forbiddenFields = ['id', 'createdAt', 'updatedAt', 'messages', 'recipients', 'serverId', "ownerId"];
+
+    if (Object.keys(channel).some((key) => forbiddenFields.includes(key)))
+      throw new BadRequestException(`The following fields are not allowed to be updated: ${forbiddenFields.join(', ')}`);
+
+    const updatedChannel = await this.prisma.channel.update({
+      where: {
+        id: channelId,
+      },
+      data: {
+        ...channel,
+        messages: {
+          updateMany: channel.messages.map((message) => ({
+            where: { id: message.id },
+            data: message,
+          })),
+        },
+        recipients: {
+          set: channel.recipients.map((recipient) => ({
+            id: recipient.id,
+          })),
+        },
+        permissionOverwrites: {
+          set: channel.permissionOverwrites.map((permissionOverwrite) => ({
+            ...permissionOverwrite,
+            type: Number(permissionOverwrite.type),
+            allow: permissionOverwrite.allow.toString(),
+            deny: permissionOverwrite.deny.toString(),
+          })),
+        },
+      },
+    });
+
+    if (!updatedChannel)
+      throw new NotFoundException(`Channel with id ${channelId} does not exist`);
+
+    return `Channel with id ${updatedChannel.id} has been updated!`;
+  }
 }

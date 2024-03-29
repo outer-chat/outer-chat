@@ -1,5 +1,5 @@
 import * as swagger from '@nestjs/swagger';
-import { Controller, Get, Param, Post, Body, UseGuards, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, UseGuards, Delete, Patch } from '@nestjs/common';
 import { Channel } from './dto/Channel';
 import { ChannelService } from './channel.service';
 import { Roles } from 'src/guards/roles/roles.decorator';
@@ -70,5 +70,17 @@ export class ChannelController {
     @Delete(':id/recipients')
     removeRecipients(@Param('id') id: string, @Body() recipients: string[]): Promise<string> {
         return this.channelService.removeRecipients(id, recipients);
+    }
+
+    @swagger.ApiOkResponse({
+        status: 200,
+        description: 'Edit a channel',
+        type: String,
+    })
+    @Roles(Role.USER, Role.ADMIN)
+    @UseGuards(RolesGuard)
+    @Patch(':id')
+    editChannel(@Param('id') id: string, @Body() channel: Channel): Promise<string> {
+        return this.channelService.channelEdition(id, channel);
     }
 }
