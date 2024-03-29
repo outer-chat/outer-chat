@@ -1,7 +1,7 @@
 import * as swagger from '@nestjs/swagger';
 import { User as PrismaUser } from '@prisma/client/edge';
 
-export class User extends Promise<Omit<PrismaUser, 'password' | 'serverId' | 'channelId' | 'Message' | 'Server' | 'Channel'>> {
+export class User extends Promise<Omit<PrismaUser, 'password' | 'Message'>> {
   @swagger.ApiProperty({
     description: 'The user id',
     type: String,
@@ -64,5 +64,32 @@ export class User extends Promise<Omit<PrismaUser, 'password' | 'serverId' | 'ch
     example: 'I am a software developer',
   })
   bio: string;
-  roles: any;
+
+  @swagger.ApiProperty({
+    description: 'The user roles',
+    type: Array,
+    example: ['USER'],
+  })
+  roles: string[];
+
+  @swagger.ApiProperty({
+    description: 'The user friends',
+    type: Array,
+    example: ['friend1', 'friend2'],
+  })
+  friends: string[];
+
+  @swagger.ApiProperty({
+    description: 'The user servers',
+    type: Array,
+    example: ['server1', 'server2'],
+  })
+  servers: string[];
+
+  @swagger.ApiProperty({
+    description: 'The user channels',
+    type: Array,
+    example: ['channel1', 'channel2'],
+  })
+  channels: string[];
 }

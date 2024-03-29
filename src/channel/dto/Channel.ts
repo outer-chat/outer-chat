@@ -2,7 +2,7 @@ import * as swagger from '@nestjs/swagger';
 import { Channel as PrismaChannel, ChannelType as PrismaChannelType } from '@prisma/client/edge';
 import { User, Message, PermissionOverwrite } from '../../dto';
 
-export class Channel extends Promise<Omit<PrismaChannel, 'serverId' | 'Server'>> {
+export class Channel extends Promise<PrismaChannel> {
     @swagger.ApiProperty({
         description: 'The channel id',
         type: String,
@@ -68,7 +68,7 @@ export class Channel extends Promise<Omit<PrismaChannel, 'serverId' | 'Server'>>
 
     @swagger.ApiProperty({
         description: 'The channel recipients',
-        type: [],
+        type: [User],
         example: [],
     })
     recipients: User[];
@@ -95,6 +95,13 @@ export class Channel extends Promise<Omit<PrismaChannel, 'serverId' | 'Server'>>
     lastMessageId?: string;
 
     @swagger.ApiProperty({
+        description: 'The channel serverId',
+        type: String,
+        example: '37963246-7e9d-4239-a95f-96704c6dcbaa',
+    })
+    serverId?: string;
+
+    @swagger.ApiProperty({
         description: 'The channel description',
         type: String,
         example: 'This is a general channel',
@@ -114,4 +121,11 @@ export class Channel extends Promise<Omit<PrismaChannel, 'serverId' | 'Server'>>
         example: [],
     })
     permissionOverwrites: PermissionOverwrite[];
+
+    @swagger.ApiProperty({
+        description: 'The channel ownerId',
+        type: String,
+        example: '37963246-7e9d-4239-a95f-96704c6dcbaa',
+    })
+    ownerId?: string;
 }
