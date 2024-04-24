@@ -12,12 +12,12 @@ import { PrismaService } from './prisma/prisma.service';
 import { AppModule } from './modules';
 import { Logger } from '@nestjs/common';
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 3000;
 const host = process.env.HOST || '0.0.0.0';
 
-const adminUsername = process.env.ADMIN_USERNAME || 'admin';
-const adminEmail = process.env.ADMIN_EMAIL || 'admin';
-const adminPasswordSaveFilePath = process.env.ADMIN_PASSWORD_SAVE_FILE_PATH || './admin-password.txt';
+const adminUsername = 'admin';
+const adminEmail = 'admin';
+const adminPasswordSaveFilePath = './admin-password.txt';
 
 function generatePassword() {
   var length = 22,

@@ -29,12 +29,18 @@ jobs:
             ${{ runner.os }}-
 
       - name: Install Dependencies
-        run: npm ci
+        run: |
+          cd server
+          npm ci
 
       - name: Generate Prisma Client
-        run: npx prisma generate
+        run: |
+          cd server
+          npx prisma generate
 
       - name: Run the tests
         env:
           DATABASE_URL: mongodb://mysuperdb/outerchat
-        run: npm run test:e2e
+        run: |
+          cd server
+          npm run test:e2e
