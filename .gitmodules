@@ -1,3 +1,4 @@
 [submodule "client"]
 	path = client
 	url = https://github.com/outer-chat/clientapp.git
+	branch = main
