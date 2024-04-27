@@ -36,5 +36,5 @@ jobs:
 
       - name: Run the tests
         env:
-          DATABASE_URL: mongodb://mysuperdb/outerchat
+          DATABASE_URI: mongodb://mysuperdb/outerchat
         run: npm run test:e2e

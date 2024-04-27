@@ -1,33 +1,37 @@
-FROM node:alpine AS development
+FROM node:21-alpine AS development
 
-WORKDIR /backend
+USER node
+WORKDIR /app/dev
 
-COPY package*.json ./
+COPY --chown=node:node package*.json ./
+RUN npm ci
 
-RUN npm install
-
-COPY . .
-
-EXPOSE 8080
-
+COPY --chown=node:node . .
 RUN npx prisma generate
 
-CMD ["npm", "start:dev"]
+CMD [ "npm", "run", "start:dev" ]
 
-FROM node:alpine AS production
+FROM node:21-alpine AS build
 
-WORKDIR /backend
+USER node
+WORKDIR /app/build
 
-COPY package*.json ./
+ENV NODE_ENV production
 
-RUN npm install --production
-
-COPY --from=development /backend /backend
-
-EXPOSE 8080
-
-RUN npx prisma generate
+COPY --chown=node:node package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+COPY --chown=node:node . .
 
 RUN npm run build
+RUN npx prisma generate
 
-CMD ["npm", "run", "start:prod"]
+CMD [ "npm", "run", "build" ]
+
+FROM node:21-alpine AS production
+
+COPY --from=build /app/build /app
+WORKDIR /app
+
+ENV NODE_ENV production
+
+CMD [ "npm", "run", "start:prod" ]

@@ -46,24 +46,24 @@ npm run build
 npm run start:prod
 ```
 
-**Note** : If you do not want to setup a database, you can use the `docker-compose.yml` file at the root of the project. It will launch a postgres database. You can edit the env variables in the `docker-compose.yml` file.
+**Note** : If you do not want to setup a database, you can use the `compose.yml` file at the root of the project. It will launch a postgres database. You can edit the env variables in the `compose.yml` file.
 
 ### With Docker
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
-As said earlier, this snippet only up the database. If you want to up the whole stack, you can use the `docker-compose.prod.yml` file at the root of the project.
+As said earlier, this snippet only up the database. If you want to up the whole stack, you can use the `compose.prod.yml` file at the root of the project.
 
 ```bash
-docker-compose -f docker-compose.prod.yml up -d
+docker compose -f compose.prod.yml up -d
 ```
 
-As you may, you can edit the env variables in the `docker-compose.prod.yml` file.
+As you may, you can edit the env variables in the `compose.prod.yml` file.
 And edit the Caddyfile to match your domain.
 
-Note that the `docker-compose.prod.yml` also launch the clientapp. If not already done, I invite you to pull the submodule located in : `./outer-chat.client`.
+Note that the `compose.prod.yml` also launch the clientapp. If not already done, I invite you to pull the submodule located in : `.client`.
 
 ```bash
 git submodule init
