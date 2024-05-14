@@ -1,5 +1,5 @@
 services:
-  mongo-1:
+  mongo:
     image: mongo:5
     command: ['--replSet', 'rs0', '--bind_ip_all', '--port', '27017']
     volumes:
@@ -7,31 +7,9 @@ services:
     ports:
       - 27017:27017
     healthcheck:
-      test: test $$(echo "rs.initiate({_id:'rs0',members:[{_id:0,host:\"localhost:27017\"},{_id:1,host:\"mongo-2:27017\"},{_id:2,host:\"mongo-3:27017\"}]}).ok || rs.status().ok" | mongo --port 27017 --quiet) -eq 1
-      interval: 10s
-      start_period: 30s
-
-  mongo-2:
-    image: mongo:5
-    command: ['--replSet', 'rs0', '--bind_ip_all', '--port', '27017']
-    volumes:
-      - mongo-2:/data/db
-    healthcheck:
-      test: ["CMD", "mongo", "--eval", "rs.isMaster()", "localhost:27017"]
-      interval: 10s
-      start_period: 30s
-
-  mongo-3:
-    image: mongo:5
-    command: ['--replSet', 'rs0', '--bind_ip_all', '--port', '27017']
-    volumes:
-      - mongo-3:/data/db
-    healthcheck:
-      test: ["CMD", "mongo", "--eval", "rs.isMaster()", "localhost:27017"]
+      test: test $$(echo "rs.initiate({_id:'rs0',members:[{_id:0,host:\"localhost:27017\"}]}).ok || rs.status().ok" | mongo --port 27017 --quiet) -eq 1
       interval: 10s
       start_period: 30s
 
 volumes:
   mongo-1:
-  mongo-2:
-  mongo-3:
