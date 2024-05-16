@@ -85,7 +85,9 @@ export class AuthController {
     },
   })
   @Post('refresh')
-  refreshToken(@Body() refreshToken: string): Promise<Tokens> {
+  refreshToken(@Body() body: JSON): Promise<Tokens> {
+    const refreshToken = body['refreshToken'];
+
     return this.authService.refreshToken(refreshToken);
   }
 }
