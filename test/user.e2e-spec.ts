@@ -4,7 +4,7 @@ import * as request from 'supertest';
 
 import { UserModule } from '../src/modules';
 import { UserService } from '../src/services';
-import { PrismaModule } from '../src/prisma/prisma.module';
+import { PrismaService } from '../src/prisma/prisma.service';
 
 import { User as PrismaUser } from '@prisma/client/edge';
 import { User } from '../src/dto';
@@ -16,11 +16,10 @@ describe('UserController /user routes', () => {
   let app: INestApplication;
   let userService: UserService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
         UserModule,
-        PrismaModule,
         JwtModule.registerAsync({
           imports: [ConfigModule],
           useFactory: async (configService: ConfigService) => ({
@@ -29,7 +28,8 @@ describe('UserController /user routes', () => {
           inject: [ConfigService],
         }),
       ],
-      providers: [UserService],
+      providers: [UserService, PrismaService],
+      exports: [PrismaService],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -191,20 +191,6 @@ describe('UserController /user routes', () => {
 
   describe('PATCH /user/1', () => {
     it('should patch a user (logged in as an admin)', () => {
-      const mockUser: PrismaUser = {
-        id: '1',
-        email: 'example@example.com',
-        username: 'John Doe',
-        password: 'password',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        avatar: Buffer.from(''),
-        banner: Buffer.from(''),
-        bannerColor: 'blue',
-        bio: 'User bio',
-        roles: ['USER']
-      };
-
       jest.spyOn(userService, 'patchUser').mockResolvedValue("User updated successfully!");
 
       const requestBody = { username: 'Jane Smith' };
@@ -278,34 +264,16 @@ describe('UserController /user routes', () => {
 
   describe('DELETE /user/1', () => {
     it('should delete a user (logged in as an admin)', () => {
-      const mockUser: PrismaUser = {
-        id: '1',
-        email: 'example@example.com',
-        username: 'John Doe',
-        password: 'password',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        avatar: Buffer.from(''),
-        banner: Buffer.from(''),
-        bannerColor: 'blue',
-        bio: 'User bio',
-        roles: ['USER']
-      };
-
       jest.spyOn(userService, 'deleteUser').mockResolvedValue("User deleted successfully!");
 
       const payload = { roles: ['ADMIN'] };
       const token = app.get<JwtService>(JwtService).sign(payload);
 
-      request(app.getHttpServer())
+      return request(app.getHttpServer())
         .delete('/user/1')
         .set('Authorization', `Bearer ${token}`)
         .expect(200)
-
-      return request(app.getHttpServer())
-        .get('/user/1')
-        .set('Authorization', `Bearer ${token}`)
-        .expect(404);
+        .expect("User deleted successfully!");
     });
   });
 });
