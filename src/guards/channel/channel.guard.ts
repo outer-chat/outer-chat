@@ -27,20 +27,21 @@ export class ChannelGuard implements CanActivate {
           throw new UnauthorizedException('Invalid token.');
         }
 
-        const user = await this.prisma.user.findUnique({
-          where: {
-            id: userPayload.userId,
-          },
-          include: {
-            channels: true,
-          },
+        const channel = await this.prisma.channel.findUnique({
+            where: {
+                id: channelId,
+            },
+            include: {
+                recipients: true,
+            },
         });
 
-        if (user.channels.includes(channelId)) {
+        if (channel.recipients.includes(userPayload.userId)) {
             return true;
         } else {
             throw new UnauthorizedException('You do not have permission to access this channel.');
         }
+
     } catch (error) {
         throw new UnauthorizedException('Invalid token.');
     }
