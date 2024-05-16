@@ -7,7 +7,7 @@ import { UserService } from '../src/services';
 import { PrismaModule } from '../src/prisma/prisma.module';
 
 import { User as PrismaUser } from '@prisma/client/edge';
-import { User } from 'src/dto';
+import { User } from '../src/dto';
 
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -55,7 +55,6 @@ describe('UserController /user routes', () => {
           banner: Buffer.from(''),
           bannerColor: 'blue',
           bio: 'User bio',
-          channelId: 'channel1',
           roles: ['USER']
         },
         {
@@ -69,7 +68,6 @@ describe('UserController /user routes', () => {
           banner: Buffer.from(''),
           bannerColor: 'red',
           bio: 'User bio',
-          channelId: 'channel2',
           roles: ['USER']
         },
       ];
@@ -136,7 +134,6 @@ describe('UserController /user routes', () => {
           banner: Buffer.from(''),
           bannerColor: 'blue',
           bio: 'User bio',
-          channelId: 'channel1',
           roles: ['USER']
         },
         {
@@ -150,7 +147,6 @@ describe('UserController /user routes', () => {
           banner: Buffer.from(''),
           bannerColor: 'red',
           bio: 'User bio',
-          channelId: 'channel2',
           roles: ['USER']
         },
       ];
@@ -206,7 +202,6 @@ describe('UserController /user routes', () => {
         banner: Buffer.from(''),
         bannerColor: 'blue',
         bio: 'User bio',
-        channelId: 'channel1',
         roles: ['USER']
       };
 
@@ -237,7 +232,6 @@ describe('UserController /user routes', () => {
         banner: Buffer.from(''),
         bannerColor: 'blue',
         bio: 'User bio',
-        channelId: 'channel1',
         roles: ['USER']
       };
 
@@ -265,7 +259,6 @@ describe('UserController /user routes', () => {
         banner: Buffer.from(''),
         bannerColor: 'blue',
         bio: 'User bio',
-        channelId: 'channel1',
         roles: ['USER']
       };
 
@@ -296,7 +289,6 @@ describe('UserController /user routes', () => {
         banner: Buffer.from(''),
         bannerColor: 'blue',
         bio: 'User bio',
-        channelId: 'channel1',
         roles: ['USER']
       };
 

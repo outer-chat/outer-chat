@@ -2,10 +2,10 @@ import * as swagger from '@nestjs/swagger';
 import { Controller, Get, Param, Post, Body, UseGuards, Delete, Patch, Request } from '@nestjs/common';
 import { Channel } from './dto/Channel';
 import { ChannelService } from './channel.service';
-import { Roles } from 'src/guards/roles/roles.decorator';
-import { Role } from 'src/guards/roles/roles.enum';
-import { RolesGuard } from 'src/guards/roles/roles.guard';
-import { ChannelGuard } from 'src/guards/channel/channel.guard';
+import { Roles } from '../guards/roles/roles.decorator';
+import { Role } from '../guards/roles/roles.enum';
+import { RolesGuard } from '../guards/roles/roles.guard';
+import { ChannelGuard } from '../guards/channel/channel.guard';
 
 @swagger.ApiTags('channels')
 @Controller('channels')
