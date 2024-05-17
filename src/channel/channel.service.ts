@@ -169,18 +169,18 @@ export class ChannelService {
       data: {
         ...channel,
         messages: {
-          updateMany: channel.messages.map((message) => ({
+          updateMany: channel.messages?.map((message) => ({
             where: { id: message.id },
             data: message,
           })),
         },
         recipients: {
-          set: channel.recipients.map((recipient) => ({
+          set: channel.recipients?.map((recipient) => ({
             id: recipient.id,
           })),
         },
         permissionOverwrites: {
-          set: channel.permissionOverwrites.map((permissionOverwrite) => ({
+          set: channel.permissionOverwrites?.map((permissionOverwrite) => ({
             ...permissionOverwrite,
             type: Number(permissionOverwrite.type),
             allow: permissionOverwrite.allow.toString(),
