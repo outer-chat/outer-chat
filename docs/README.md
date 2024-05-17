@@ -18,130 +18,124 @@ There is also a mermaid schema for the database:
 ```mermaid
 erDiagram
     User {
-        string id PK "Unique identifier"
-        string email "Unique email"
-        string username "Unique username"
-        string password "User password"
-        datetime createdAt "Creation date"
-        datetime updatedAt "Last update date"
-        bytes avatar "User avatar (optional)"
-        bytes banner "User banner (optional)"
-        string bannerColor "Banner color (optional)"
-        string bio "User biography (optional)"
-        string channelId "Channel ID (optional)"
-        UserRoles[] roles "User roles"
+        String id PK
+        String email
+        String username
+        String password
+        DateTime createdAt
+        DateTime updatedAt
+        Bytes avatar
+        Bytes banner
+        String bannerColor
+        String bio
+        UserRoles[] roles
     }
-
+    ChannelRecipient {
+        String id PK
+        String channelId
+        String userId
+    }
     Friend {
-        string id PK "Unique identifier"
-        string userId "User ID"
-        string friendId "Friend ID"
+        String id PK
+        String userId
+        String friendId
     }
-
     ServerMember {
-        string id PK "Unique identifier"
-        string serverId "Server ID"
-        string userId "User ID"
-        UserRoles[] roles "Member roles"
+        String id PK
+        String serverId
+        String userId
+        UserRoles[] roles
     }
-
     Message {
-        string id PK "Unique identifier"
-        datetime createdAt "Creation date"
-        datetime updatedAt "Last update date"
-        string authorId "Author ID"
-        string content "Message content"
-        string channelId "Channel ID"
+        String id PK
+        DateTime createdAt
+        DateTime updatedAt
+        String authorId
+        String content
+        String channelId
     }
-
     PermissionOverwrite {
-        string id PK "Unique identifier"
-        int type "Overwrite type"
-        string allow "Allowed permissions"
-        string deny "Denied permissions"
-        string channelId "Channel ID"
+        String id PK
+        Int type
+        String allow
+        String deny
+        String channelId
     }
-
     Channel {
-        string id PK "Unique identifier"
-        string name "Channel name"
-        ChannelType type "Channel type"
-        string topic "Topic (optional)"
-        boolean nsfw "Is NSFW"
-        int bitrate "Bitrate (optional)"
-        int userLimit "User limit (optional)"
-        int rateLimitPerUser "Rate limit per user (optional)"
-        datetime createdAt "Creation date"
-        datetime updatedAt "Last update date"
-        string lastMessageId "Last message ID (optional)"
-        string serverId "Server ID (optional)"
-        string description "Description (optional)"
-        int position "Position (optional)"
+        String id PK
+        String name
+        ChannelType type
+        String topic
+        Boolean nsfw
+        Int bitrate
+        Int userLimit
+        Int rateLimitPerUser
+        DateTime createdAt
+        DateTime updatedAt
+        String lastMessageId
+        String serverId
+        String description
+        Int position
+        String ownerId
     }
-
     Roles {
-        string id PK "Unique identifier"
-        datetime createdAt "Creation date"
-        datetime updatedAt "Last update date"
-        string name "Role name"
-        string[] permissions "Permissions"
-        string color "Role color"
-        boolean hoist "Hoist"
-        boolean mentionable "Mentionable"
-        string serverId "Server ID"
+        String id PK
+        DateTime createdAt
+        DateTime updatedAt
+        String name
+        String[] permissions
+        String color
+        Boolean hoist
+        Boolean mentionable
+        String serverId
     }
-
     Log {
-        string id PK "Unique identifier"
-        datetime createdAt "Creation date"
-        datetime updatedAt "Last update date"
-        string type "Log type"
-        string message "Log message"
-        string serverId "Server ID"
-        string authorId "Author ID (optional)"
+        String id PK
+        DateTime createdAt
+        DateTime updatedAt
+        String type
+        String message
+        String serverId
+        String authorId
     }
-
     Server {
-        string id PK "Unique identifier"
-        datetime createdAt "Creation date"
-        datetime updatedAt "Last update date"
-        string name "Server name"
-        string ownerId "Owner ID"
-        bytes icon "Server icon (optional)"
-        bytes banner "Server banner (optional)"
-        string bannerColor "Banner color (optional)"
-        string description "Description (optional)"
+        String id PK
+        DateTime createdAt
+        DateTime updatedAt
+        String name
+        String ownerId FK
+        String memberId
+        Bytes icon
+        Bytes banner
+        String bannerColor
+        String description
     }
 
+    User ||--o{ Message : "writes"
     User ||--o{ Friend : "has friends"
-    User ||--o{ ServerMember : "is member of"
-    User ||--o{ Message : "authors"
-    User ||--o{ Log : "logs"
-    User ||--|| Channel : "has channel"
-    User ||--|| Server : "owns"
-
-    Friend ||--|| User : "friends with"
-
-    ServerMember }|--|| Server : "belongs to"
-    ServerMember }|--|| User : "is user"
-
-    Message }|--|| User : "authored by"
-    Message }|--|| Channel : "belongs to"
-
-    PermissionOverwrite }|--|| Channel : "overwrites permissions for"
-
-    Channel }|--o{ Message : "contains"
-    Channel }|--|| PermissionOverwrite : "has permission overwrites"
-    Channel ||--|| Server : "belongs to"
-    Channel }|--o{ User : "has recipients"
-
-    Roles }|--|| Server : "belongs to"
-
-    Log }|--|| Server : "logs for"
-    Log }|--o{ User : "authored by"
-
+    User ||--o{ ServerMember : "is a member of"
+    User ||--o{ ChannelRecipient : "is recipient of"
+    User ||--o{ Channel : "owns channels"
+    User ||--o{ Log : "author of logs"
+    Server ||--o{ User : "owned by"
     Server ||--o{ ServerMember : "has members"
-    Server ||--o{ Channel : "contains channels"
+    Server ||--o{ Channel : "has channels"
     Server ||--o{ Roles : "has roles"
     Server ||--o{ Log : "has logs"
+    ServerMember ||--o{ User : "has user"
+    ServerMember ||--o{ Server : "belongs to server"
+    ChannelRecipient ||--o{ User : "has user"
+    ChannelRecipient ||--o{ Channel : "has channel"
+    Friend ||--o{ User : "has user"
+    Friend ||--o{ User : "is friend of"
+    Message ||--o{ User : "written by"
+    Message ||--o{ Channel : "in channel"
+    PermissionOverwrite ||--o{ Channel : "belongs to"
+    Channel ||--o{ Server : "belongs to server"
+    Channel ||--o{ PermissionOverwrite : "has permissions"
+    Channel ||--o{ Message : "has messages"
+    Channel ||--o{ User : "owned by"
+    Roles ||--o{ Server : "belongs to"
+    Log ||--o{ Server : "belongs to"
+    Log ||--o{ User : "written by"
 ```
