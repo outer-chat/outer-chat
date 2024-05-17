@@ -1,6 +1,8 @@
 * text=lf
 * eol=lf
 
+*.pdf text=auto
+
 *.png binary
 *.jpg binary
 
