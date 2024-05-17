@@ -57,8 +57,8 @@ export class ChannelController {
     @Roles(Role.USER, Role.ADMIN)
     @UseGuards(RolesGuard)
     @Post(':id/recipients')
-    addRecipients(@Param('id') id: string, @Body() recipients: string[]): Promise<string> {
-        return this.channelService.addRecipients(id, recipients);
+    addRecipients(@Param('id') id: string, @Body() body: { recipients: string[] }): Promise<string> {
+        return this.channelService.addRecipients(id, body.recipients);
     }
 
     @swagger.ApiOkResponse({
@@ -69,8 +69,8 @@ export class ChannelController {
     @Roles(Role.USER, Role.ADMIN)
     @UseGuards(RolesGuard)
     @Delete(':id/recipients')
-    removeRecipients(@Param('id') id: string, @Body() recipients: string[]): Promise<string> {
-        return this.channelService.removeRecipients(id, recipients);
+    removeRecipients(@Param('id') id: string, @Body() body: { recipients: string[] }): Promise<string> {
+        return this.channelService.removeRecipients(id, body.recipients);
     }
 
     @swagger.ApiOkResponse({
