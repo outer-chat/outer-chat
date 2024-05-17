@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
+import * as bcrypt from 'bcrypt';
 
 import { AuthModule } from '../src/modules';
 import { AuthService } from '../src/services';
@@ -13,7 +14,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 describe('AuthController /auth routes', () => {
   let app: INestApplication;
-  let authService: AuthService;
+  let prisma: PrismaService;
+  let jwtService: JwtService;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -32,7 +34,8 @@ describe('AuthController /auth routes', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    authService = moduleFixture.get<AuthService>(AuthService);
+    prisma = moduleFixture.get<PrismaService>(PrismaService);
+    jwtService = moduleFixture.get<JwtService>(JwtService);
     await app.init();
   });
 
@@ -41,12 +44,12 @@ describe('AuthController /auth routes', () => {
   });
 
   describe('POST /auth/login', () => {
-    it('should log in a user', () => {
-      const user: PrismaUser = {
+    it('should log in a user', async () => {
+      const mockUser: PrismaUser = {
         id: '1',
         email: 'john@example.com',
-        username: 'John Doe',
-        password: 'password',
+        username: 'John_Doe',
+        password: 'Password123?',
         createdAt: new Date(),
         updatedAt: new Date(),
         avatar: Buffer.from(''),
@@ -56,31 +59,38 @@ describe('AuthController /auth routes', () => {
         roles: ['USER'],
       };
 
-      jest.spyOn(authService, 'loginUser').mockImplementation(async () => ({
-        accessToken: {
-          token: 'access-token',
-          tokenExpiresAt: new Date(Date.now() + 3600 * 1000),
-        },
-        refreshToken: {
-          token: 'refresh-token',
-          tokenExpiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000),
-        },
-      }));
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(mockUser.password, salt);
 
-      return request(app.getHttpServer())
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({
+        ...mockUser,
+        password: hashedPassword,
+      });
+      jest.spyOn(prisma.user, 'update').mockResolvedValue({
+        ...mockUser,
+        password: hashedPassword,
+      });
+
+      const response = await request(app.getHttpServer())
         .post('/auth/login')
-        .send(user)
-        .expect(201);
+        .send({
+          email: mockUser.email,
+          password: mockUser.password,
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty('accessToken');
+      expect(response.body).toHaveProperty('refreshToken');
     });
   });
 
   describe('POST /auth/register', () => {
-    it('should register a user', () => {
-      const user: PrismaUser = {
+    it('should register a new user', async () => {
+      const mockUser: PrismaUser = {
         id: '1',
         email: 'john@example.com',
-        username: 'John Doe',
-        password: 'password',
+        username: 'John_Doe',
+        password: 'Password123?',
         createdAt: new Date(),
         updatedAt: new Date(),
         avatar: Buffer.from(''),
@@ -90,44 +100,54 @@ describe('AuthController /auth routes', () => {
         roles: ['USER'],
       };
 
-      jest.spyOn(authService, 'registerUser').mockImplementation(async () => ({
-        accessToken: {
-          token : 'access-token',
-          tokenExpiresAt: new Date(Date.now() + 3600 * 1000),
-        },
-        refreshToken: {
-          token: 'refresh-token',
-          tokenExpiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000),
-        },
-      }));
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(null);
+      jest.spyOn(prisma.user, 'create').mockResolvedValue(mockUser);
 
-      return request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .post('/auth/register')
-        .send(user)
-        .expect(201);
+        .send({
+          email: mockUser.email,
+          username: mockUser.username,
+          password: mockUser.password,
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty('accessToken');
+      expect(response.body).toHaveProperty('refreshToken');
     });
   });
 
   describe('POST /auth/refresh', () => {
-    it('should refresh a token', () => {
-      const payload = { userId: '1', roles: ['USER'] };
-      const token = app.get<JwtService>(JwtService).sign(payload);
+    it('should refresh a user token', async () => {
+      const mockUser: PrismaUser = {
+        id: '1',
+        email: 'john@example.com',
+        username: 'John_Doe',
+        password: 'Password123?',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        avatar: Buffer.from(''),
+        banner: Buffer.from(''),
+        bannerColor: 'blue',
+        bio: 'User bio',
+        roles: ['USER'],
+      };
 
-      jest.spyOn(authService, 'refreshToken').mockImplementation(async () => ({
-        accessToken: {
-          token: 'access-token',
-          tokenExpiresAt: new Date(Date.now() + 3600 * 1000),
-        },
-        refreshToken: {
-          token: 'refresh-token',
-          tokenExpiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000),
-        },
-      }));
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(mockUser);
+      jest.spyOn(prisma.user, 'update').mockResolvedValue(mockUser);
 
-      return request(app.getHttpServer())
+      jest.spyOn(jwtService, 'verify').mockReturnValue({ userId: mockUser.id });
+
+
+      const response = await request(app.getHttpServer())
         .post('/auth/refresh')
-        .set('Authorization', `Bearer ${token}`)
-        .expect(201);
+        .send({
+          refreshToken: jwtService.sign({ userId: mockUser.id }),
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty('accessToken');
+      expect(response.body).toHaveProperty('refreshToken');
     });
   });
 });

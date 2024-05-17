@@ -7,14 +7,13 @@ import { UserService } from '../src/services';
 import { PrismaService } from '../src/prisma/prisma.service';
 
 import { User as PrismaUser } from '@prisma/client/edge';
-import { User } from '../src/dto';
 
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 describe('UserController /user routes', () => {
   let app: INestApplication;
-  let userService: UserService;
+  let prisma: PrismaService;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -33,7 +32,7 @@ describe('UserController /user routes', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    userService = moduleFixture.get<UserService>(UserService);
+    prisma = moduleFixture.get<PrismaService>(PrismaService);
     await app.init();
   });
 
@@ -72,7 +71,7 @@ describe('UserController /user routes', () => {
         },
       ];
 
-      jest.spyOn(userService, 'getAllUsers').mockResolvedValue(mockUsers as unknown as User[]);
+      jest.spyOn(prisma.user, 'findMany').mockResolvedValue(Promise.resolve(mockUsers) as any);
 
       const payload = { roles: ['ADMIN'] };
       const token = app.get<JwtService>(JwtService).sign(payload);
@@ -151,7 +150,7 @@ describe('UserController /user routes', () => {
         },
       ];
 
-      jest.spyOn(userService, 'getUser').mockResolvedValue(mockUsers[0] as unknown as User);
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(Promise.resolve(mockUsers[0]) as any);
 
       const payload = { roles: ['USER']};
       const token = app.get<JwtService>(JwtService).sign(payload);
@@ -191,9 +190,24 @@ describe('UserController /user routes', () => {
 
   describe('PATCH /user/1', () => {
     it('should patch a user (logged in as an admin)', () => {
-      jest.spyOn(userService, 'patchUser').mockResolvedValue("User updated successfully!");
+      const mockedUser: PrismaUser = {
+        id: '1',
+        email: 'jane@example.com',
+        username: 'Jane Doe',
+        password: 'password',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        avatar: Buffer.from(''),
+        banner: Buffer.from(''),
+        bannerColor: 'blue',
+        bio: 'User bio',
+        roles: ['USER']
+      };
 
-      const requestBody = { username: 'Jane Smith' };
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(Promise.resolve(mockedUser) as any);
+      jest.spyOn(prisma.user, 'update').mockResolvedValue(Promise.resolve(mockedUser) as any);
+
+      const requestBody = { username: 'Jane_Smith' };
 
       const payload = { roles: ['ADMIN'] };
       const token = app.get<JwtService>(JwtService).sign(payload);
@@ -221,7 +235,7 @@ describe('UserController /user routes', () => {
         roles: ['USER']
       };
 
-      jest.spyOn(userService, 'patchUser').mockReturnValue(Promise.resolve(mockUser as unknown as string));
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(Promise.resolve(mockUser) as any);
 
       const payload = { roles: ['USER'] };
       const token = app.get<JwtService>(JwtService).sign(payload);
@@ -229,7 +243,7 @@ describe('UserController /user routes', () => {
       return request(app.getHttpServer())
         .patch('/user/1')
         .set('Authorization', `Bearer ${token}`)
-        .send({ username: 'Jane Smith' })
+        .send({ username: 'Jane_Smith' })
         .expect(401);
     });
 
@@ -248,7 +262,8 @@ describe('UserController /user routes', () => {
         roles: ['USER']
       };
 
-      jest.spyOn(userService, 'patchUser').mockResolvedValue("User updated successfully!");
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(Promise.resolve(mockUser) as any);
+      jest.spyOn(prisma.user, 'update').mockResolvedValue(Promise.resolve(mockUser) as any);
 
       const payload = { userId: '1', roles: ['USER'] };
       const token = app.get<JwtService>(JwtService).sign(payload);
@@ -256,7 +271,7 @@ describe('UserController /user routes', () => {
       return request(app.getHttpServer())
         .patch('/user/1')
         .set('Authorization', `Bearer ${token}`)
-        .send({ username: 'Jane Smith' })
+        .send({ username: 'Jane_Smith' })
         .expect(200)
         .expect("User updated successfully!");
     });
@@ -264,7 +279,22 @@ describe('UserController /user routes', () => {
 
   describe('DELETE /user/1', () => {
     it('should delete a user (logged in as an admin)', () => {
-      jest.spyOn(userService, 'deleteUser').mockResolvedValue("User deleted successfully!");
+      const mockUser: PrismaUser = {
+        id: '1',
+        email: 'john@example.com',
+        username: 'John Doe',
+        password: 'password',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        avatar: Buffer.from(''),
+        banner: Buffer.from(''),
+        bannerColor: 'blue',
+        bio: 'User bio',
+        roles: ['USER']
+      };
+
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(Promise.resolve(mockUser) as any);
+      jest.spyOn(prisma.user, 'delete').mockResolvedValue(Promise.resolve(mockUser) as any);
 
       const payload = { roles: ['ADMIN'] };
       const token = app.get<JwtService>(JwtService).sign(payload);

@@ -4,18 +4,23 @@ import * as request from 'supertest';
 
 import { ChannelModule } from '../src/modules';
 import { ChannelService } from '../src/services';
+import { ChannelGuard } from '../src/guards/channel/channel.guard';
 
 import { PrismaService } from '../src/prisma/prisma.service';
 import { Channel, User } from '../src/dto';
-import { ChannelType as PrismaChannelType, Channel as PrismaChannel } from '@prisma/client/edge';
 
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { $Enums, User as PrismaUser } from '@prisma/client';
+import {
+  ChannelType as PrismaChannelType,
+  Channel as PrismaChannel,
+  User as PrismaUser,
+  ChannelRecipient as PrismaChannelRecipent
+} from '@prisma/client/edge';
 
 describe('ChannelController /channel routes', () => {
   let app: INestApplication;
-  let channelService: ChannelService;
+  let prisma: PrismaService;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -29,12 +34,12 @@ describe('ChannelController /channel routes', () => {
           inject: [ConfigService],
         }),
       ],
-      providers: [ChannelService, PrismaService],
-      exports: [PrismaService],
+      providers: [ChannelService, PrismaService, ChannelGuard],
+      exports: [PrismaService, ChannelGuard],
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    channelService = moduleFixture.get<ChannelService>(ChannelService);
+    prisma = moduleFixture.get<PrismaService>(PrismaService);
     await app.init();
   });
 
@@ -44,60 +49,68 @@ describe('ChannelController /channel routes', () => {
 
   describe('POST /channels', () => {
     it('should create a new channel', async () => {
-      const mockChannel: Channel = {
-        id: '1',
-        name: 'general',
-        type: PrismaChannelType.DM,
-        nsfw: false,
-        messages: [],
-        recipients: [],
-        createdAt: undefined,
-        updatedAt: undefined,
-        permissionOverwrites: [],
-        then: function <TResult1 = { id: string; name: string; type: $Enums.ChannelType; topic: string; nsfw: boolean; bitrate: number; userLimit: number; rateLimitPerUser: number; createdAt: Date; updatedAt: Date; lastMessageId: string; serverId: string; description: string; position: number; ownerId: string; }, TResult2 = never>(onfulfilled?: (value: { id: string; name: string; type: $Enums.ChannelType; topic: string; nsfw: boolean; bitrate: number; userLimit: number; rateLimitPerUser: number; createdAt: Date; updatedAt: Date; lastMessageId: string; serverId: string; description: string; position: number; ownerId: string; }) => TResult1 | PromiseLike<TResult1>, onrejected?: (reason: any) => TResult2 | PromiseLike<TResult2>): Promise<TResult1 | TResult2> {
-          throw new Error('Function not implemented.');
-        },
-        catch: function <TResult = never>(onrejected?: (reason: any) => TResult | PromiseLike<TResult>): Promise<{ id: string; name: string; type: $Enums.ChannelType; topic: string; nsfw: boolean; bitrate: number; userLimit: number; rateLimitPerUser: number; createdAt: Date; updatedAt: Date; lastMessageId: string; serverId: string; description: string; position: number; ownerId: string; } | TResult> {
-          throw new Error('Function not implemented.');
-        },
-        finally: function (onfinally?: () => void): Promise<{ id: string; name: string; type: $Enums.ChannelType; topic: string; nsfw: boolean; bitrate: number; userLimit: number; rateLimitPerUser: number; createdAt: Date; updatedAt: Date; lastMessageId: string; serverId: string; description: string; position: number; ownerId: string; }> {
-          throw new Error('Function not implemented.');
-        },
-        [Symbol.toStringTag]: ''
-      };
-
-      const mockUser: PrismaUser = {
+      const mockUserAllowedInChannel = {
         id: '1',
         email: 'john@example.com',
         username: 'John Doe',
-        password: 'password',
         createdAt: new Date(),
         updatedAt: new Date(),
         avatar: Buffer.from(''),
         banner: Buffer.from(''),
         bannerColor: 'blue',
         bio: 'User bio',
-        roles: ['USER']
+        roles: ['USER'],
+        friends: [],
+        servers: [],
+        channels: []
       };
 
-      jest.spyOn(channelService, 'createChannel').mockResolvedValue(Promise.resolve("Channel created!"));
+      const mockChannel = {
+        id: '1',
+        name: 'general',
+        type: PrismaChannelType.DM,
+        nsfw: false,
+        messages: [],
+        recipients: [mockUserAllowedInChannel],
+        createdAt: undefined,
+        updatedAt: undefined,
+        permissionOverwrites: []
+      };
 
-      const payload = { roles: ['USER'] };
-      const jwtService = app.get(JwtService);
-      const token = jwtService.sign(payload);
+      jest.spyOn(prisma.channel, 'create').mockResolvedValue(mockChannel as any);
 
-      await request(app.getHttpServer())
+      const payload = { roles: ['USER'], userId: mockUserAllowedInChannel.id };
+      const token = app.get<JwtService>(JwtService).sign(payload);
+
+      const res = await request(app.getHttpServer())
         .post('/channels')
         .set('Authorization', `Bearer ${token}`)
         .send(mockChannel)
-        .expect(201)
-        .expect('Channel created!');
+        .expect(201);
+
+      expect(res.text).toEqual(`Channel with id ${mockChannel.id} has been created!`);
     });
   });
 
   describe('GET /channels', () => {
     it('should return all channels', async () => {
-      const mockChannel: Channel = {
+      const mockUserAllowedInChannel = {
+        id: '1',
+        email: 'john@example.com',
+        username: 'John Doe',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        avatar: Buffer.from(''),
+        banner: Buffer.from(''),
+        bannerColor: 'blue',
+        bio: 'User bio',
+        roles: ['USER'],
+        friends: [],
+        servers: [],
+        channels: []
+      };
+
+      const mockChannel = {
         id: '1',
         name: 'general',
         type: PrismaChannelType.DM,
@@ -106,35 +119,247 @@ describe('ChannelController /channel routes', () => {
         recipients: [],
         createdAt: undefined,
         updatedAt: undefined,
-        permissionOverwrites: [],
-        then: function <TResult1 = { id: string; name: string; type: $Enums.ChannelType; topic: string; nsfw: boolean; bitrate: number; userLimit: number; rateLimitPerUser: number; createdAt: Date; updatedAt: Date; lastMessageId: string; serverId: string; description: string; position: number; ownerId: string; }, TResult2 = never>(onfulfilled?: (value: { id: string; name: string; type: $Enums.ChannelType; topic: string; nsfw: boolean; bitrate: number; userLimit: number; rateLimitPerUser: number; createdAt: Date; updatedAt: Date; lastMessageId: string; serverId: string; description: string; position: number; ownerId: string; }) => TResult1 | PromiseLike<TResult1>, onrejected?: (reason: any) => TResult2 | PromiseLike<TResult2>): Promise<TResult1 | TResult2> {
-          throw new Error('Function not implemented.');
-        },
-        catch: function <TResult = never>(onrejected?: (reason: any) => TResult | PromiseLike<TResult>): Promise<{ id: string; name: string; type: $Enums.ChannelType; topic: string; nsfw: boolean; bitrate: number; userLimit: number; rateLimitPerUser: number; createdAt: Date; updatedAt: Date; lastMessageId: string; serverId: string; description: string; position: number; ownerId: string; } | TResult> {
-          throw new Error('Function not implemented.');
-        },
-        finally: function (onfinally?: () => void): Promise<{ id: string; name: string; type: $Enums.ChannelType; topic: string; nsfw: boolean; bitrate: number; userLimit: number; rateLimitPerUser: number; createdAt: Date; updatedAt: Date; lastMessageId: string; serverId: string; description: string; position: number; ownerId: string; }> {
-          throw new Error('Function not implemented.');
-        },
-        [Symbol.toStringTag]: ''
+        permissionOverwrites: []
       };
 
-      jest.spyOn(channelService, 'getChannels').mockResolvedValue(Promise.resolve([mockChannel]));
+      jest.spyOn(prisma.channel, 'findMany').mockResolvedValue([mockChannel] as any);
 
-      const payload = { roles: ['ADMIN'] };
-      const jwtService = app.get(JwtService);
-      const token = jwtService.sign(payload);
+      const payload = { roles: ['ADMIN'], userId: mockUserAllowedInChannel.id };
+      const token = app.get<JwtService>(JwtService).sign(payload);
 
-      await request(app.getHttpServer())
+      const res = await request(app.getHttpServer())
         .get('/channels')
         .set('Authorization', `Bearer ${token}`)
-        .expect(200)
-        .expect((res) => {
-          expect(res.body[0].id).toBe('1');
-          expect(res.body[0].name).toBe('general');
-          expect(res.body[0].type).toBe('DM');
-          expect(res.body[0].nsfw).toBe(false);
-        });
+        .expect(200);
+
+      expect(res.body).toEqual([mockChannel]);
+    });
+  });
+
+  describe('GET /channels/:id', () => {
+    it('should return the prompted channel (must be a recipient)', async () => {
+      const mockUserAllowedInChannel = {
+        id: '1',
+        email: 'john@example.com',
+        username: 'John Doe',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        avatar: Buffer.from(''),
+        banner: Buffer.from(''),
+        bannerColor: 'blue',
+        bio: 'User bio',
+        roles: ['USER'],
+        friends: [],
+        servers: [],
+        channels: ["1"]
+      };
+
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(mockUserAllowedInChannel as any);
+
+      const mockChannel = {
+        id: '1',
+        name: 'general',
+        type: PrismaChannelType.DM,
+        nsfw: false,
+        messages: [],
+        recipients: ["1"],
+        permissionOverwrites: []
+      };
+
+      jest.spyOn(prisma.channel, 'findUnique').mockResolvedValue(mockChannel as any);
+
+      const payload = { roles: ['USER'], userId: mockUserAllowedInChannel.id };
+      const token = app.get<JwtService>(JwtService).sign(payload);
+
+      const res = await request(app.getHttpServer())
+        .get(`/channels/${mockChannel.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      expect(res.body.id).toEqual(mockChannel.id);
+    });
+  });
+
+  describe('POST /channels/:id/recipients', () => {
+    it('should add a recipient(s) to a channel', async () => {
+      const mockUserAllowedInChannel = {
+        id: '1',
+        email: 'john@example.com',
+        username: 'John Doe',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        avatar: Buffer.from(''),
+        banner: Buffer.from(''),
+        bannerColor: 'blue',
+        bio: 'User bio',
+        roles: ['USER'],
+        friends: [],
+        servers: [],
+        channels: ["1"]
+      };
+
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(mockUserAllowedInChannel as any);
+
+      const mockChannel = {
+        id: '1',
+        name: 'general',
+        type: PrismaChannelType.DM,
+        nsfw: false,
+        messages: [],
+        recipients: ["1"],
+        permissionOverwrites: []
+      };
+
+      jest.spyOn(prisma.channel, 'findUnique').mockResolvedValue(mockChannel as any);
+      jest.spyOn(prisma.channel, 'update').mockResolvedValue(mockChannel as any);
+
+      const payload = { roles: ['USER'], userId: mockUserAllowedInChannel.id };
+      const token = app.get<JwtService>(JwtService).sign(payload);
+
+      const res = await request(app.getHttpServer())
+        .post(`/channels/${mockChannel.id}/recipients`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ recipients: ["2"] })
+        .expect(201);
+
+      expect(res.text).toEqual(`Recipient(s) with id(s) 2 have been added to channel with id ${mockChannel.id}!`);
+    });
+  });
+
+  describe('DELETE /channels/:id/recipients', () => {
+    it('should remove a recipient(s) from a channel', async () => {
+      const mockUserAllowedInChannel = {
+        id: '1',
+        email: 'john@example.com',
+        username: 'John Doe',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        avatar: Buffer.from(''),
+        banner: Buffer.from(''),
+        bannerColor: 'blue',
+        bio: 'User bio',
+        roles: ['USER'],
+        friends: [],
+        servers: [],
+        channels: ["1"]
+      };
+
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(mockUserAllowedInChannel as any);
+
+      const mockChannel = {
+        id: '1',
+        name: 'general',
+        type: PrismaChannelType.DM,
+        nsfw: false,
+        messages: [],
+        recipients: ["1"],
+        permissionOverwrites: []
+      };
+
+      jest.spyOn(prisma.channel, 'findUnique').mockResolvedValue(mockChannel as any);
+      jest.spyOn(prisma.channel, 'update').mockResolvedValue(mockChannel as any);
+
+      const payload = { roles: ['USER'], userId: mockUserAllowedInChannel.id };
+      const token = app.get<JwtService>(JwtService).sign(payload);
+
+      const res = await request(app.getHttpServer())
+        .delete(`/channels/${mockChannel.id}/recipients`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ recipients: ["1"] })
+        .expect(200);
+
+      expect(res.text).toEqual(`Recipient(s) with id(s) 1 have been removed from channel with id ${mockChannel.id}!`);
+    });
+  });
+
+  describe('PATCH /channels/:id', () => {
+    it('should edit a channel', async () => {
+      const mockUserAllowedInChannel = {
+        id: '1',
+        email: 'john@example.com',
+        username: 'John Doe',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        avatar: Buffer.from(''),
+        banner: Buffer.from(''),
+        bannerColor: 'blue',
+        bio: 'User bio',
+        roles: ['USER'],
+        friends: [],
+        servers: [],
+        channels: ["1"]
+      };
+
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(mockUserAllowedInChannel as any);
+
+      const mockChannel = {
+        id: '1',
+        name: 'general',
+        type: PrismaChannelType.DM,
+        nsfw: false,
+        messages: [],
+        recipients: ["1"],
+        permissionOverwrites: []
+      };
+
+      jest.spyOn(prisma.channel, 'findUnique').mockResolvedValue(mockChannel as any);
+      jest.spyOn(prisma.channel, 'update').mockResolvedValue(mockChannel as any);
+
+      const payload = { roles: ['USER'], userId: mockUserAllowedInChannel.id };
+      const token = app.get<JwtService>(JwtService).sign(payload);
+
+      const res = await request(app.getHttpServer())
+        .patch(`/channels/${mockChannel.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name: 'general' })
+        .expect(200);
+
+      expect(res.text).toEqual(`Channel with id ${mockChannel.id} has been updated!`);
+    });
+  });
+
+  describe('DELETE /channels/:id', () => {
+    it('should delete a channel', async () => {
+      const mockUserAllowedInChannel = {
+        id: '1',
+        email: 'john@example.com',
+        username: 'John Doe',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        avatar: Buffer.from(''),
+        banner: Buffer.from(''),
+        bannerColor: 'blue',
+        bio: 'User bio',
+        roles: ['USER'],
+        friends: [],
+        servers: [],
+        channels: ["1"]
+      };
+
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(mockUserAllowedInChannel as any);
+
+      const mockChannel = {
+        id: '1',
+        name: 'general',
+        type: PrismaChannelType.DM,
+        nsfw: false,
+        messages: [],
+        recipients: ["1"],
+        permissionOverwrites: []
+      };
+
+      jest.spyOn(prisma.channel, 'findUnique').mockResolvedValue(mockChannel as any);
+      jest.spyOn(prisma.channel, 'delete').mockResolvedValue(mockChannel as any);
+
+      const payload = { roles: ['USER'], userId: mockUserAllowedInChannel.id };
+      const token = app.get<JwtService>(JwtService).sign(payload);
+
+      const res = await request(app.getHttpServer())
+        .delete(`/channels/${mockChannel.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      expect(res.text).toEqual(`Channel with id ${mockChannel.id} has been deleted!`);
     });
   });
 });
