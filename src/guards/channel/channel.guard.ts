@@ -22,25 +22,28 @@ export class ChannelGuard implements CanActivate {
     }
 
     try {
-        const userPayload = this.jwtService.decode(token);
-        if (!userPayload) {
-          throw new UnauthorizedException('Invalid token.');
-        }
+      const payload = this.jwtService.verify(token);
+      const userId = payload['userId'];
 
-        const channel = await this.prisma.channel.findUnique({
-            where: {
-                id: channelId,
-            },
-            include: {
-                recipients: true,
-            },
-        });
+      const channel = await this.prisma.channel.findUnique({
+        where: {
+          id: channelId,
+        },
+        include: {
+          recipients: true,
+        },
+      });
 
-        if (channel.recipients.includes(userPayload.userId)) {
-            return true;
-        } else {
-            throw new UnauthorizedException('You do not have permission to access this channel.');
-        }
+      if (!channel) {
+        throw new UnauthorizedException('Channel does not exist.');
+      }
+
+      const isRecipient = channel.recipients.some((recipient) => recipient.userId === userId);
+      if (!isRecipient) {
+        throw new UnauthorizedException('You are not a recipient of this channel.');
+      }
+
+      return true;
 
     } catch (error) {
         throw new UnauthorizedException('Invalid token.');

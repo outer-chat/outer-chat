@@ -109,8 +109,8 @@ export class ChannelService {
       },
       data: {
         recipients: {
-          connect: recipientIds.map((id) => ({
-            id: id,
+          create: recipientIds.map((id) => ({
+            userId: id as any,
           })),
         },
       },
@@ -143,8 +143,8 @@ export class ChannelService {
       },
       data: {
         recipients: {
-          disconnect: recipientIds.map((id) => ({
-            id: id,
+          deleteMany: recipientIds.map((id) => ({
+            userId: id as any,
           })),
         },
       },
